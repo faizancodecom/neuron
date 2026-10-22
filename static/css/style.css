@@ -1,0 +1,888 @@
+/* ==========================================================================
+   NEURON - Industrial Brutalist Engineering System (Sharp Monochrome Non-AI Slop)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --bg-black: #000000;
+    --bg-dark: #080808;
+    --bg-surface: #101010;
+    --bg-surface-elevated: #161616;
+
+    --border-subtle: #222222;
+    --border-medium: #333333;
+    --border-light: #555555;
+    --border-white: #ffffff;
+
+    --text-primary: #ffffff;
+    --text-secondary: #888888;
+    --text-muted: #555555;
+
+    --font-mono: 'JetBrains Mono', Consolas, Monaco, monospace;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border-radius: 0 !important; /* Strict sharp UI geometry */
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background-color: var(--bg-black);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================================================================
+   Header Bar
+   ========================================================================== */
+.app-header {
+    height: 48px;
+    background: var(--bg-black);
+    border-bottom: 1px solid var(--border-medium);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 100;
+    position: relative;
+    user-select: none;
+}
+
+.brand-section {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.brand-name {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+}
+
+.brand-sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.header-center-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-control-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--border-medium);
+    padding: 0 8px;
+    height: 32px;
+    background: var(--bg-black);
+}
+
+.header-control-group label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+.sharp-select {
+    background: transparent;
+    color: var(--text-primary);
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    outline: none;
+    cursor: pointer;
+}
+
+.sharp-select option {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ==========================================================================
+   Tactile Sharp Buttons
+   ========================================================================== */
+.btn {
+    border: 1px solid var(--border-medium);
+    background: var(--bg-black);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 6px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease;
+    user-select: none;
+    height: 32px;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    background: var(--bg-surface-elevated);
+    border-color: var(--border-white);
+}
+
+.btn:active, .btn.active {
+    background: var(--text-primary);
+    color: var(--bg-black);
+    border-color: var(--text-primary);
+}
+
+.btn.active svg {
+    fill: var(--bg-black);
+}
+
+.btn-primary {
+    background: var(--text-primary);
+    color: var(--bg-black);
+    border-color: var(--text-primary);
+    font-weight: 800;
+}
+
+.btn-primary:hover {
+    background: #e0e0e0;
+    border-color: #e0e0e0;
+    color: var(--bg-black);
+}
+
+.btn-danger {
+    color: #ff4d4d;
+    border-color: #551a1a;
+}
+
+.btn-danger:hover {
+    border-color: #ff4d4d;
+    background: #1a0000;
+    color: #ff4d4d;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--text-primary);
+}
+
+.btn-icon.muted svg {
+    fill: var(--text-secondary);
+    opacity: 0.5;
+}
+
+.btn-sub-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.btn.active .btn-sub-label {
+    color: #444;
+}
+
+.btn-micro {
+    background: transparent;
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    cursor: pointer;
+}
+
+.btn-micro:hover {
+    color: var(--text-primary);
+    border-color: var(--border-white);
+}
+
+.btn-block {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+/* ==========================================================================
+   Main Viewport
+   ========================================================================== */
+.viewport-main {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-dark);
+}
+
+/* Top Monospace HUD Telemetry Strip */
+.viewport-hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.88);
+    border-bottom: 1px solid var(--border-medium);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    font-size: 11px;
+    z-index: 10;
+    user-select: none;
+    overflow-x: auto;
+}
+
+.hud-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hud-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 10px;
+}
+
+.hud-val {
+    color: var(--text-primary);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.hud-divider {
+    color: var(--border-medium);
+}
+
+/* Canvas Container */
+#canvasContainer {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#simCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+/* Bottom Status Bar */
+.viewport-bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 26px;
+    background: rgba(0, 0, 0, 0.88);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    z-index: 10;
+    user-select: none;
+}
+
+/* ==========================================================================
+   Floating Compact Neuron Preview Card (Sirf ek map ho neurons ka)
+   ========================================================================== */
+.floating-neuron-card {
+    position: absolute;
+    right: 16px;
+    bottom: 38px;
+    width: 290px;
+    background: var(--bg-black);
+    border: 1px solid var(--border-medium);
+    z-index: 20;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+    user-select: none;
+}
+
+.floating-neuron-card:hover {
+    border-color: var(--border-white);
+}
+
+.neuron-card-header {
+    height: 28px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+}
+
+.neuron-card-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+}
+
+.neuron-card-body {
+    height: 160px;
+    background: var(--bg-black);
+    position: relative;
+}
+
+.neuron-card-body canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.neuron-card-footer {
+    height: 22px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    font-size: 9px;
+    color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Modals & Dialogs (Sharp Industrial B&W Architecture)
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.modal-window {
+    position: relative;
+    background: var(--bg-black);
+    border: 1px solid var(--border-white);
+    width: 480px;
+    max-width: 95vw;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+}
+
+.modal-window-large {
+    width: 1100px;
+    max-width: 95vw;
+    height: 86vh;
+}
+
+.modal-header {
+    height: 48px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-medium);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+}
+
+.modal-header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-tag {
+    font-size: 9px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.modal-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+}
+
+.modal-tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.modal-body {
+    padding: 16px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.modal-body-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 16px;
+}
+
+.modal-footer {
+    height: 48px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-medium);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+}
+
+/* ==========================================================================
+   Expanded Neuron Detail Modal (Bada karne pe poori information)
+   ========================================================================== */
+.neuron-modal-content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.neuron-modal-left {
+    flex: 1.5;
+    border-right: 1px solid var(--border-medium);
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.sub-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.tech-badge {
+    font-size: 9px;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    padding: 2px 6px;
+}
+
+.neuron-large-canvas-wrap {
+    flex: 1;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-subtle);
+    position: relative;
+}
+
+.neuron-large-canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.neuron-vector-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 10px;
+    padding: 8px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+.legend-col strong {
+    color: var(--text-primary);
+    margin-right: 4px;
+}
+
+.neuron-modal-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+    overflow-y: auto;
+}
+
+.detail-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-canvas-wrap {
+    height: 180px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-subtle);
+    position: relative;
+}
+
+.chart-canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.chart-legend-row {
+    display: flex;
+    gap: 16px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+}
+
+.telemetry-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.telem-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    font-size: 11px;
+}
+
+.telem-key {
+    color: var(--text-secondary);
+}
+
+.telem-val {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   Track Gallery & Obstacle Studio (Wahan pe na use thumbnail milenge)
+   ========================================================================== */
+.gallery-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.map-thumbnails-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 16px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.map-thumb-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-medium);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.map-thumb-card:hover {
+    border-color: var(--border-white);
+}
+
+.map-thumb-card.active-map {
+    border-color: var(--border-white);
+    background: var(--bg-surface-elevated);
+}
+
+.map-thumb-canvas-box {
+    width: 100%;
+    height: 180px;
+    background: #000000;
+    border: 1px solid var(--border-subtle);
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.map-thumb-canvas-box canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.map-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.map-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.map-card-meta {
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+/* Map Studio Editor View */
+.editor-layout {
+    flex: 1;
+    display: flex;
+    gap: 16px;
+    overflow: hidden;
+}
+
+.editor-sidebar {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-medium);
+    padding-right: 16px;
+    overflow-y: auto;
+}
+
+.editor-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+.editor-help-text {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.tool-buttons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tool-buttons-list .tool-btn {
+    text-align: left;
+    justify-content: flex-start;
+    padding-left: 10px;
+}
+
+.editor-stats-box {
+    margin-top: auto;
+    padding: 8px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    font-size: 10px;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.editor-stats-box strong {
+    color: var(--text-primary);
+}
+
+.editor-canvas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.canvas-ruler-header {
+    height: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+.editor-canvas-wrapper {
+    flex: 1;
+    background: #060606;
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+#editorCanvas {
+    background: #080808;
+    border: 1px solid var(--border-medium);
+    display: block;
+    cursor: crosshair;
+}
+
+.editor-footer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+/* ==========================================================================
+   Inputs & Form Elements
+   ========================================================================== */
+.sharp-input {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 8px 10px;
+    width: 100%;
+    outline: none;
+}
+
+.sharp-input:focus {
+    border-color: var(--border-white);
+}
+
+.mono-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.mono-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Saved Models List */
+.models-list {
+    max-height: 280px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.model-item {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.model-item:hover {
+    border-color: var(--border-light);
+}
+
+.model-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.model-meta {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.model-actions {
+    display: flex;
+    gap: 6px;
+}
+
+/* Toast Notifications */
+.toast-box {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-black);
+    border: 1px solid var(--border-white);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast-box.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
