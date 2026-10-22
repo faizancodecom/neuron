@@ -1,24 +1,72 @@
 """
 Map presets and environment track builders in Python.
-Includes Metro City Grid with traffic lights, and enclosed track environments.
+Includes Straight Obstacle Course with wall barriers, and enclosed tracks.
 """
 
 from .city_map import build_city_map
 
 
-def get_preset_map(preset_id='city'):
-    if preset_id == 'city':
-        return build_city_map()
+def get_preset_map(preset_id='straight'):
+    if preset_id == 'straight':
+        return _build_straight()
+    elif preset_id == 'boulevard':
+        return _build_boulevard()
     elif preset_id == 'chicane':
         return _build_chicane()
     elif preset_id == 'maze':
         return _build_maze()
     elif preset_id == 'plaza':
         return _build_plaza()
-    elif preset_id == 'boulevard':
-        return _build_boulevard()
-    else:
+    elif preset_id == 'city':
         return build_city_map()
+    else:
+        return _build_straight()
+
+
+def _build_straight():
+    """
+    Straight Highway Track with wall obstacles.
+    Cars navigate a straight highway (width 600px, length 1080px)
+    and use AI LiDAR to find the best path through staggered wall barriers to the destination.
+    """
+    return {
+        'name': 'straight',
+        'title': 'Straight Obstacle Course',
+        'description': 'Straight highway with wall obstacles. AI cars learn to find the best path through walls to reach destination.',
+        'spawnPoint': {'x': 400, 'y': 1080, 'angle': 0.0},
+        'target': {'x': 400, 'y': 110, 'radius': 50, 'name': 'Finish Line Destination'},
+        'roadBorders': [
+            # Left boundary wall
+            [{'x': 100, 'y': 1140}, {'x': 100, 'y': 60}],
+            # Right boundary wall
+            [{'x': 700, 'y': 1140}, {'x': 700, 'y': 60}],
+            # Bottom boundary wall
+            [{'x': 100, 'y': 1140}, {'x': 700, 'y': 1140}],
+            # Top boundary wall
+            [{'x': 100, 'y': 60}, {'x': 700, 'y': 60}]
+        ],
+        'obstacles': [
+            # Wall Obstacle 1 (Y = 920): Left wall barrier (X: 100 to 450, leaving 250px right gap)
+            {'type': 'barrier', 'x': 275, 'y': 920, 'width': 350, 'height': 24, 'angle': 0.0, 'label': 'WALL 1'},
+            # Wall Obstacle 2 (Y = 740): Right wall barrier (X: 350 to 700, leaving 250px left gap)
+            {'type': 'barrier', 'x': 525, 'y': 740, 'width': 350, 'height': 24, 'angle': 0.0, 'label': 'WALL 2'},
+            # Wall Obstacle 3 (Y = 560): Center wall barrier (X: 250 to 550, leaving dual 150px gaps)
+            {'type': 'barrier', 'x': 400, 'y': 560, 'width': 300, 'height': 24, 'angle': 0.0, 'label': 'WALL 3'},
+            # Wall Obstacle 4 (Y = 380): Left wall barrier (X: 100 to 450, leaving 250px right gap)
+            {'type': 'barrier', 'x': 275, 'y': 380, 'width': 350, 'height': 24, 'angle': 0.0, 'label': 'WALL 4'},
+            # Wall Obstacle 5 (Y = 220): Right wall barrier (X: 350 to 700, leaving 250px left gap)
+            {'type': 'barrier', 'x': 525, 'y': 220, 'width': 350, 'height': 24, 'angle': 0.0, 'label': 'WALL 5'}
+        ],
+        'waypoints': [
+            {'x': 575, 'y': 920, 'name': 'Gate 1 (Right Gap)'},
+            {'x': 225, 'y': 740, 'name': 'Gate 2 (Left Gap)'},
+            {'x': 625, 'y': 560, 'name': 'Gate 3 (Right Bypass)'},
+            {'x': 575, 'y': 380, 'name': 'Gate 4 (Right Gap)'},
+            {'x': 225, 'y': 220, 'name': 'Gate 5 (Left Gap)'},
+            {'x': 400, 'y': 110, 'name': 'Finish Line Destination'}
+        ],
+        'trafficLights': []
+    }
 
 
 def _build_boulevard():

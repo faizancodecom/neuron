@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEURON SIMULATION LAB</title>
     <meta name="description" content="Sharp, high-precision autonomous driving neuroevolution simulator.">
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-    <link rel="alternate icon" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/css/style.css?v=3.2">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=3.2">
+    <link rel="alternate icon" href="/static/favicon.svg?v=3.2">
 </head>
 <body>
 
@@ -22,11 +22,11 @@
         <!-- Center Controls: Minimal & Tactical -->
         <div class="header-center-controls">
             <!-- Run / Pause -->
-            <button id="btnPlay" class="btn btn-sharp" title="Toggle Simulation Execution">
+            <button id="btnPlay" class="btn btn-sharp active" title="Toggle Simulation Execution">
                 <span id="playIcon">
-                    <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                 </span>
-                <span id="playText">START</span>
+                <span id="playText">PAUSE</span>
             </button>
 
             <!-- Unified Speed & Vehicle Population Settings Button -->
@@ -38,12 +38,6 @@
                     </svg>
                 </span>
                 <span id="speedConfigLabel">SPEED: 1X</span>
-            </button>
-
-            <!-- Map / City Selector Button -->
-            <button id="btnOpenMapModal" class="btn btn-sharp" title="Select Track Environment">
-                <span>MAPS &amp; TRACKS</span>
-                <span id="activeMapBadge" class="btn-sub-label">[ METRO CITY ]</span>
             </button>
         </div>
 
@@ -180,7 +174,10 @@
             <div class="modal-footer">
                 <button class="btn btn-sharp modal-close">CANCEL</button>
                 <div style="display: flex; gap: 8px;">
-                    <button id="btnReplayFromSettings" class="btn btn-sharp" title="Reset Vehicles to Spawn &amp; Run at Designated Speed">↺ REPLAY</button>
+                    <button id="btnReplayFromSettings" class="btn btn-sharp" title="Reset Vehicles to Spawn &amp; Run at Designated Speed">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 13c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 8.74A7.93 7.93 0 0 0 4 13c0 4.42 3.58 8 8 8v4l5-5-5-5v4c-3.31 0-6-2.69-6-6z"/></svg>
+                        <span>REPLAY</span>
+                    </button>
                     <button id="btnApplySpeedSettings" class="btn btn-sharp btn-primary">APPLY SETTINGS</button>
                 </div>
             </div>
@@ -430,33 +427,18 @@
             </div>
         </div>
     </div>
-            <div class="modal-body">
-                <div class="models-list" id="modelsList">
-                    <div class="mono-sub">Scanning saved neural models...</div>
-                </div>
-                <div style="margin-top: 14px; border-top: 1px solid #222; padding-top: 12px; display: flex; gap: 8px;">
-                    <button id="btnExportJSON" class="btn btn-sharp" style="flex: 1;">EXPORT JSON</button>
-                    <button id="btnImportJSON" class="btn btn-sharp" style="flex: 1;">IMPORT JSON</button>
-                    <input type="file" id="jsonFileInput" accept=".json" style="display:none;">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-sharp modal-close">CLOSE</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Sharp Toast Notification -->
     <div id="toast" class="toast-box">NOTIFICATION</div>
 
-    <!-- Scripts -->
-    <script src="/static/js/neural_network.js"></script>
-    <script src="/static/js/sensor.js"></script>
-    <script src="/static/js/car.js"></script>
-    <script src="/static/js/map.js"></script>
-    <script src="/static/js/genetic_algo.js"></script>
-    <script src="/static/js/visualizer.js"></script>
-    <script src="/static/js/audio.js"></script>
-    <script src="/static/js/main.js"></script>
+    <!-- Scripts with Cache-Buster v=3.4 -->
+    <script src="/static/js/neural_network.js?v=3.4"></script>
+    <script src="/static/js/sensor.js?v=3.4"></script>
+    <script src="/static/js/car.js?v=3.4"></script>
+    <script src="/static/js/map.js?v=3.4"></script>
+    <script src="/static/js/genetic_algo.js?v=3.4"></script>
+    <script src="/static/js/visualizer.js?v=3.4"></script>
+    <script src="/static/js/audio.js?v=3.4"></script>
+    <script src="/static/js/main.js?v=3.4"></script>
 </body>
 </html>

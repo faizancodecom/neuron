@@ -107,7 +107,7 @@ def handle_client_action(payload):
         elif action == 'set_population':
             engine.set_population(payload.get('size', 80))
         elif action == 'set_map_preset':
-            preset_id = payload.get('preset', 'city')
+            preset_id = payload.get('preset', 'straight')
             data = get_preset_map(preset_id)
             engine.set_map(data)
         elif action == 'set_custom_map':
@@ -122,6 +122,14 @@ def handle_client_action(payload):
                 brain = NeuralNetwork.from_dict(brain_data)
                 if brain:
                     engine.apply_trained_brain(brain)
+
+
+@app.after_request
+def add_no_cache_headers(response):
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 # -------------------------------------------------------------

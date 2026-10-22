@@ -199,13 +199,21 @@ class Car:
 
     def _detect_traffic_light(self, traffic_lights):
         """
-        Detects if a traffic light is ahead within 130px on car's trajectory.
+        Detects if an active directional traffic light is ahead within 140px on car's trajectory.
         Returns 0.0 (clear/green) to 1.0 (approaching red light).
         """
         if not traffic_lights:
             return 0.0
 
+        # Determine car's current roadway axis (North-South vs East-West)
+        car_is_ns = abs(math.cos(self.angle)) >= abs(math.sin(self.angle))
+        relevant_dir = 'NS' if car_is_ns else 'EW'
+
         for tl in traffic_lights:
+            # Strictly observe lights matching the car's current roadway direction!
+            if tl.direction != relevant_dir:
+                continue
+
             dist = math.hypot(self.x - tl.x, self.y - tl.y)
             if dist < 140.0:
                 # Check if light is in front of the car
@@ -215,12 +223,14 @@ class Car:
                 forward_y = -math.cos(self.angle)
                 dot = (dx * forward_x + dy * forward_y) / (dist + 1e-5)
 
-                if dot > 0.4:  # Ahead of car
+                if dot > 0.30:  # Ahead of car
                     if tl.state == 'RED':
                         proximity = max(0.0, min(1.0, 1.0 - (dist / 140.0)))
                         return proximity
                     elif tl.state == 'YELLOW':
-                        return 0.5
+                        return 0.35
+                    elif tl.state == 'GREEN':
+                        return 0.0
         return 0.0
 
     def _generate_inputs(self, target, traffic_signal):

@@ -3,6 +3,8 @@ NEURON AI Simulation Engine & Genetic Algorithm Supervisor in Python.
 Coordinates live vehicle physics, Ackermann steering, traffic lights, and real neuroevolution.
 """
 
+import os
+import json
 import time
 import math
 import random
@@ -32,8 +34,12 @@ class SimulationEngine:
         self._cached_brain = None
         self._cached_brain_step = -1
 
-        # Load City map by default
-        self.map_data = get_preset_map('city')
+        # Success Persistence State
+        self.successful_ai_saved = None
+        self.has_saved_current_gen = False
+
+        # Load Straight Obstacle Course map by default (no city, straight highway with walls)
+        self.map_data = get_preset_map('straight')
         self.traffic_lights = self.map_data.get('trafficLights', [])
         self.cars = []
         self.best_car = None
@@ -43,7 +49,7 @@ class SimulationEngine:
 
     def _init_population(self):
         self.cars = []
-        spawn = self.map_data.get('spawnPoint', {'x': 380, 'y': 1110, 'angle': 0.0})
+        spawn = self.map_data.get('spawnPoint', {'x': 400, 'y': 1080, 'angle': 0.0})
         for _ in range(self.population_size):
             car = Car(spawn['x'], spawn['y'])
             car.angle = spawn.get('angle', 0.0)
@@ -56,7 +62,7 @@ class SimulationEngine:
         print(f"  Population: {self.population_size} Autonomous Vehicles")
         print(f"  Architecture: 12 Inputs -> 14 Hidden -> 10 Hidden -> 4 Outputs")
         print(f"  Active Map: {self.map_data.get('title', self.map_data.get('name'))}")
-        print(f"  Traffic System: {len(self.traffic_lights)} Automated Signal Lights Active")
+        print(f"  Target: Find optimal path through wall obstacles to destination")
         print("=" * 65 + "\n")
 
     def step(self):
@@ -102,18 +108,77 @@ class SimulationEngine:
                     current_best = car
             self.best_car = current_best
 
-        # 4. Real-time Terminal Logging (every ~1.0s)
+        # 4. Check for destination arrival and auto-save Successful AI
+        if parked_count > 0 and not self.has_saved_current_gen:
+            if parked_count == len(self.cars):
+                # 100% of the entire population reached the destination!
+                self._save_successful_ai(parked_count, is_all_reached=True)
+            elif alive_count == 0:
+                # All active cars finished and some reached destination
+                self._save_successful_ai(parked_count, is_all_reached=False)
+
+        # 5. Real-time Terminal Logging (every ~1.0s)
         now = time.time()
         if now - self._last_log_time >= 1.0:
             self._last_log_time = now
             self._print_terminal_status(alive_count, parked_count)
 
-        # 5. Generational Progression Trigger
+        # 6. Generational Progression Trigger
         all_finished = alive_count == 0
         timeout_reached = self.elapsed_time >= self.episode_duration
 
         if all_finished or timeout_reached:
             self.next_generation()
+
+    def _save_successful_ai(self, parked_count, is_all_reached=False):
+        """
+        Automatically persists the successful AI brain model once cars reach the destination.
+        """
+        top = self.best_car or (self.cars[0] if self.cars else None)
+        if not top:
+            return
+
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        models_dir = os.path.join(base_dir, 'saved_models')
+        os.makedirs(models_dir, exist_ok=True)
+
+        prefix = "Successful_AI_AllReached" if is_all_reached else "Successful_AI"
+        fit_int = int(top.fitness)
+        timestamp = int(time.time())
+        filename = f"{prefix}_Gen{self.generation}_Fit{fit_int}_{timestamp}.json"
+        filepath = os.path.join(models_dir, filename)
+
+        model_name = f"{'All AI Reached Destination' if is_all_reached else 'Successful AI'} (Gen {self.generation})"
+        record = {
+            'name': model_name,
+            'type': 'successful_ai',
+            'generation': self.generation,
+            'fitness': round(float(top.fitness), 2),
+            'timestamp': timestamp,
+            'date_str': time.strftime("%Y-%m-%d %H:%M:%S"),
+            'map_name': self.map_data.get('name', 'straight'),
+            'map_title': self.map_data.get('title', 'Straight Course'),
+            'cars_reached': parked_count,
+            'total_cars': len(self.cars),
+            'is_all_reached': is_all_reached,
+            'brain': top.brain.to_dict()
+        }
+
+        try:
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(record, f, indent=2)
+
+            self.successful_ai_saved = filename
+            self.has_saved_current_gen = True
+
+            print("\n" + "=" * 65)
+            print("  >>> [SUCCESSFUL AI ACHIEVED!] DESTINATION REACHED! <<<")
+            print(f"  Generation: {self.generation:03d} | Cars Reached: {parked_count}/{self.population_size}")
+            print(f"  Status: {'100% OF AI POPULATION REACHED DESTINATION!' if is_all_reached else 'Champion AI successfully navigated walls to destination!'}")
+            print(f"  Saved AI Model: saved_models/{filename}")
+            print("=" * 65 + "\n")
+        except Exception as e:
+            print(f"[ERROR] Failed to auto-save successful AI model: {e}")
 
     def _print_terminal_status(self, alive, parked):
         best_fit = self.best_car.fitness if self.best_car else 0.0
@@ -144,6 +209,12 @@ class SimulationEngine:
         parked_this_gen = sum(1 for c in self.cars if c.parked)
         self.total_parked += parked_this_gen
 
+        # Check and auto-save Successful AI if destination was reached
+        if parked_this_gen > 0 and not self.has_saved_current_gen:
+            self._save_successful_ai(parked_this_gen, is_all_reached=(parked_this_gen == len(self.cars)))
+
+        self.has_saved_current_gen = False
+
         if top and top.fitness > self.champion_fitness:
             self.champion_fitness = top.fitness
             self.champion_brain = top.brain.clone()
@@ -166,7 +237,7 @@ class SimulationEngine:
         print("-" * 65 + "\n")
 
         # 2. Reproduction & Real Genetic Learning
-        spawn = self.map_data.get('spawnPoint', {'x': 380, 'y': 1110, 'angle': 0.0})
+        spawn = self.map_data.get('spawnPoint', {'x': 400, 'y': 1080, 'angle': 0.0})
         new_cars = []
 
         # Elitism: preserve top 2 performers unchanged
@@ -177,8 +248,13 @@ class SimulationEngine:
             car.brain = self.cars[i].brain.clone()
             new_cars.append(car)
 
-        # Fill rest with mutated brains from top performers
-        parent_pool = self.cars[:max(4, int(self.population_size * 0.25))]
+        # If cars reached destination, breed exclusively from winning brains!
+        successful_cars = [c for c in self.cars if c.parked]
+        if successful_cars:
+            parent_pool = successful_cars
+        else:
+            parent_pool = self.cars[:max(4, int(self.population_size * 0.25))]
+
         while len(new_cars) < self.population_size:
             parent = random.choice(parent_pool)
             child_car = Car(spawn['x'], spawn['y'])
@@ -321,10 +397,12 @@ class SimulationEngine:
             'cars': compact_cars,
             'leader': leader_data,
             'trafficLights': tl_list,
-            'mapName': self.map_data.get('name', 'city'),
-            'mapTitle': self.map_data.get('title', 'City Grid'),
+            'mapName': self.map_data.get('name', 'straight'),
+            'mapTitle': self.map_data.get('title', 'Straight Obstacle Course'),
             'target': self.map_data.get('target'),
             'destinations': self.map_data.get('destinations', []),
             'waypoints': self.map_data.get('waypoints', []),
-            'fitnessHistory': self.fitness_history[-35:]
+            'fitnessHistory': self.fitness_history[-35:],
+            'successfulAISaved': self.successful_ai_saved,
+            'destinationReached': self.total_parked > 0 or parked_count > 0
         }

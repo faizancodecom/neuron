@@ -73,20 +73,20 @@ def build_city_map():
     ]
 
     # Building Blocks (9 solid rectangular city blocks that cars cannot cross)
-    # Block definitions: [x, y, w, h]
+    # Block definitions: [x, y, w, h] precisely aligned to 120px avenues
     blocks = [
-        # Top Row
-        {'x': 200, 'y': 200, 'width': 280, 'height': 280},
-        {'x': 600, 'y': 200, 'width': 320, 'height': 280},
-        {'x': 1000, 'y': 200, 'width': 280, 'height': 280},
-        # Middle Row
-        {'x': 200, 'y': 600, 'width': 280, 'height': 320},
-        {'x': 600, 'y': 600, 'width': 320, 'height': 320},
-        {'x': 1000, 'y': 600, 'width': 280, 'height': 320},
-        # Bottom Row
-        {'x': 200, 'y': 1000, 'width': 280, 'height': 280},
-        {'x': 600, 'y': 1000, 'width': 320, 'height': 280},
-        {'x': 1000, 'y': 1000, 'width': 280, 'height': 280}
+        # Top Row (North: Y in [60, 320], height 260, center Y = 190)
+        {'x': 190, 'y': 190, 'width': 260, 'height': 260, 'label': 'WEST COMMERCE'},
+        {'x': 600, 'y': 190, 'width': 320, 'height': 260, 'label': 'CIVIC CENTER'},
+        {'x': 1010, 'y': 190, 'width': 260, 'height': 260, 'label': 'EAST TERMINAL'},
+        # Middle Row (Center: Y in [440, 760], height 320, center Y = 600)
+        {'x': 190, 'y': 600, 'width': 260, 'height': 320, 'label': 'METRO TOWER'},
+        {'x': 600, 'y': 600, 'width': 320, 'height': 320, 'label': 'TECH HEADQUARTERS'},
+        {'x': 1010, 'y': 600, 'width': 260, 'height': 320, 'label': 'FINANCIAL PLAZA'},
+        # Bottom Row (South: Y in [880, 1140], height 260, center Y = 1010)
+        {'x': 190, 'y': 1010, 'width': 260, 'height': 260, 'label': 'RESIDENTIAL QUAD'},
+        {'x': 600, 'y': 1010, 'width': 320, 'height': 260, 'label': 'LOGISTICS HUB'},
+        {'x': 1010, 'y': 1010, 'width': 260, 'height': 260, 'label': 'HARBOR DEPOT'}
     ]
 
     # Convert building blocks into obstacle colliders (barriers)
@@ -119,26 +119,26 @@ def build_city_map():
         TrafficLight('TL_4_EW', 820, 820, direction='EW')
     ]
 
-    # Destination Points
+    # Destination Points (aligned to lane centerlines)
     destinations = [
-        {'id': 'downtown', 'name': 'City Central Plaza', 'x': 820, 'y': 160, 'radius': 52},
-        {'id': 'terminal', 'name': 'Airport Terminal', 'x': 1080, 'y': 380, 'radius': 52},
-        {'id': 'harbor', 'name': 'South Harbor Docks', 'x': 820, 'y': 1060, 'radius': 52},
-        {'id': 'tech_park', 'name': 'West Tech Campus', 'x': 120, 'y': 820, 'radius': 52}
+        {'id': 'downtown', 'name': 'City Central Plaza', 'x': 850, 'y': 160, 'radius': 52},
+        {'id': 'terminal', 'name': 'Airport Terminal', 'x': 1080, 'y': 410, 'radius': 52},
+        {'id': 'harbor', 'name': 'South Harbor Docks', 'x': 850, 'y': 1060, 'radius': 52},
+        {'id': 'tech_park', 'name': 'West Tech Campus', 'x': 120, 'y': 790, 'radius': 52}
     ]
 
-    # Primary navigation route (Spawn at South Boulevard, travel to North Downtown Plaza)
-    spawn_point = {'x': 380, 'y': 1110, 'angle': 0.0}
+    # Primary navigation route (Spawn at South Boulevard in Northbound lane, travel to North Downtown Plaza)
+    spawn_point = {'x': 410, 'y': 1110, 'angle': 0.0}
     primary_destination = destinations[0]
 
-    # Route waypoints guiding AI cars through city lanes
+    # Route waypoints guiding AI cars through proper driving lanes
     waypoints = [
-        {'x': 380, 'y': 850, 'name': 'Intersection South-West'},
-        {'x': 380, 'y': 600, 'name': 'West Boulevard Mid'},
-        {'x': 380, 'y': 380, 'name': 'Intersection North-West'},
-        {'x': 600, 'y': 380, 'name': 'North Avenue Bridge'},
-        {'x': 820, 'y': 380, 'name': 'Intersection North-East'},
-        {'x': 820, 'y': 160, 'name': 'City Central Plaza Terminal'}
+        {'x': 410, 'y': 850, 'name': 'Intersection South-West Approach'},
+        {'x': 410, 'y': 600, 'name': 'West Boulevard Mid'},
+        {'x': 410, 'y': 380, 'name': 'Intersection North-West Turn'},
+        {'x': 600, 'y': 410, 'name': 'North Avenue Eastbound'},
+        {'x': 850, 'y': 380, 'name': 'Intersection North-East Turn'},
+        {'x': 850, 'y': 160, 'name': 'City Central Plaza Terminal'}
     ]
 
     return {

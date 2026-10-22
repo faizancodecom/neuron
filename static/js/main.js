@@ -29,9 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastGenRecorded = 0;
     let prevParkedCount = 0;
     let lastNetworkDrawTime = 0;
+    let lastSuccessfulAISaved = null;
 
-    // Viewport & Camera
-    let camera = { x: 400, y: 500, zoom: 0.95 };
+    // Viewport & Camera (focused on straight track start area)
+    let camera = { x: 400, y: 950, zoom: 0.95 };
     let isDragging = false;
     let dragStart = { x: 0, y: 0 };
     let cameraMode = 'follow';
@@ -135,6 +136,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------
     function onPythonStateReceived(state) {
         latestState = state;
+
+        // Sync map preset with Python Engine
+        if (state.mapName && mapSystem.currentMapId !== state.mapName) {
+            mapSystem.loadPreset(state.mapName);
+        }
+
+        // Auto-Saved Successful AI Detection
+        if (state.successfulAISaved && state.successfulAISaved !== lastSuccessfulAISaved) {
+            lastSuccessfulAISaved = state.successfulAISaved;
+            showToast(`SUCCESSFUL AI SAVED: Model reached destination! (${state.successfulAISaved})`);
+            sound.playParkedFanfare();
+        }
 
         // Sound cues based on Python AI state
         if (state.parked > prevParkedCount) {
@@ -466,24 +479,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const playText = document.getElementById('playText');
 
     function updatePlayButtonUI() {
+        if (!btnPlay || !playIcon || !playText) return;
         if (isRunning) {
             btnPlay.classList.add('active');
-            playIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+            playIcon.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
             playText.innerText = "PAUSE";
-            setText('simStatusText', isWarp ? 'WARP SPEED (40X) ACTIVE IN PYTHON' : 'PYTHON AI ENGINE EXECUTING');
+            btnPlay.title = "Pause Simulation";
         } else {
             btnPlay.classList.remove('active');
-            playIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+            playIcon.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
             playText.innerText = "START";
-            setText('simStatusText', 'PYTHON SIMULATION PAUSED');
+            btnPlay.title = "Start / Resume Simulation";
         }
     }
 
-    btnPlay.addEventListener('click', () => {
-        isRunning = !isRunning;
-        sendCommand({ action: 'toggle_pause' });
+    if (btnPlay) {
+        btnPlay.addEventListener('click', () => {
+            isRunning = !isRunning;
+            sendCommand({ action: 'toggle_pause' });
+            updatePlayButtonUI();
+        });
+        // Initial state sync
         updatePlayButtonUI();
-    });
+    }
 
     // 2. Unified Speed & Population Settings Modal
     const btnSpeedConfig = document.getElementById('btnSpeedConfig');
@@ -656,11 +674,13 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'plaza', title: 'Multi-Stall Plaza', description: 'Realistic parking lot challenge with parked vehicle obstacles.', presetId: 'plaza' }
     ];
 
-    btnOpenMapModal.addEventListener('click', () => {
-        mapStudioModal.classList.add('open');
-        switchModalTab('gallery');
-        renderThumbnailsGallery();
-    });
+    if (btnOpenMapModal && mapStudioModal) {
+        btnOpenMapModal.addEventListener('click', () => {
+            mapStudioModal.classList.add('open');
+            switchModalTab('gallery');
+            renderThumbnailsGallery();
+        });
+    }
 
     function switchModalTab(tab) {
         if (tab === 'gallery') {
@@ -743,8 +763,9 @@ document.addEventListener('DOMContentLoaded', () => {
             sendCommand({ action: 'set_custom_map', map_data: mapItem.data });
         }
         
-        mapStudioModal.classList.remove('open');
-        document.getElementById('activeMapBadge').innerText = `[ ${mapItem.title.toUpperCase()} ]`;
+        if (mapStudioModal) mapStudioModal.classList.remove('open');
+        const badge = document.getElementById('activeMapBadge');
+        if (badge) badge.innerText = `[ ${mapItem.title.toUpperCase()} ]`;
         showToast(`Sent "${mapItem.title}" to Python AI Engine.`);
     }
 
@@ -930,9 +951,16 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.strokeRect(-24, -28, 48, 56);
         ctx.setLineDash([]);
         ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.moveTo(0, -38);
+        ctx.lineTo(6, -30);
+        ctx.lineTo(-6, -30);
+        ctx.closePath();
+        ctx.fill();
+
         ctx.font = "10px 'JetBrains Mono', monospace";
         ctx.textAlign = "center";
-        ctx.fillText("▲ START", 0, -32);
+        ctx.fillText("START", 0, -18);
         ctx.restore();
 
         // Placed Obstacles
@@ -1054,8 +1082,9 @@ document.addEventListener('DOMContentLoaded', () => {
         editorMapData.name = name;
         mapSystem.loadCustomMap(editorMapData);
         sendCommand({ action: 'set_custom_map', map_data: editorMapData });
-        mapStudioModal.classList.remove('open');
-        document.getElementById('activeMapBadge').innerText = `[ ${name.toUpperCase()} ]`;
+        if (mapStudioModal) mapStudioModal.classList.remove('open');
+        const badge = document.getElementById('activeMapBadge');
+        if (badge) badge.innerText = `[ ${name.toUpperCase()} ]`;
         showToast(`Deployed "${name}" to Python AI Engine.`);
     });
 

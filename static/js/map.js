@@ -14,7 +14,7 @@ class MapSystem {
         this.blocks = [];
         this.waypoints = [];
 
-        this.loadPreset('city');
+        this.loadPreset('straight');
     }
 
     loadPreset(presetId) {
@@ -27,8 +27,8 @@ class MapSystem {
         this.waypoints = [];
 
         switch (presetId) {
-            case 'city':
-                this.#buildCity();
+            case 'straight':
+                this.#buildStraightCourse();
                 break;
             case 'boulevard':
                 this.#buildBoulevard();
@@ -42,15 +42,57 @@ class MapSystem {
             case 'plaza':
                 this.#buildPlaza();
                 break;
-            default:
+            case 'city':
                 this.#buildCity();
+                break;
+            default:
+                this.#buildStraightCourse();
                 break;
         }
     }
 
+    #buildStraightCourse() {
+        this.spawnPoint = { x: 400, y: 1080, angle: 0.0 };
+        this.target = { x: 400, y: 110, radius: 50, name: "Finish Line Destination" };
+
+        // Outer Road Borders (Straight track: X in [100, 700], Y in [60, 1140])
+        this.roadBorders = [
+            [{ x: 100, y: 1140 }, { x: 100, y: 60 }],
+            [{ x: 700, y: 1140 }, { x: 700, y: 60 }],
+            [{ x: 100, y: 1140 }, { x: 700, y: 1140 }],
+            [{ x: 100, y: 60 }, { x: 700, y: 60 }]
+        ];
+
+        // 5 Staggered Wall Barriers with Navigation Openings
+        this.obstacles = [
+            // Wall 1 (Y = 920): Left wall (width 350, leaves 250px right gap from X=450 to 700)
+            { type: 'barrier', x: 275, y: 920, width: 350, height: 24, angle: 0.0, label: "WALL 1" },
+            // Wall 2 (Y = 740): Right wall (width 350, leaves 250px left gap from X=100 to 350)
+            { type: 'barrier', x: 525, y: 740, width: 350, height: 24, angle: 0.0, label: "WALL 2" },
+            // Wall 3 (Y = 560): Center wall (width 300, leaves dual 150px gaps)
+            { type: 'barrier', x: 400, y: 560, width: 300, height: 24, angle: 0.0, label: "WALL 3" },
+            // Wall 4 (Y = 380): Left wall (width 350, leaves 250px right gap from X=450 to 700)
+            { type: 'barrier', x: 275, y: 380, width: 350, height: 24, angle: 0.0, label: "WALL 4" },
+            // Wall 5 (Y = 220): Right wall (width 350, leaves 250px left gap from X=100 to 350)
+            { type: 'barrier', x: 525, y: 220, width: 350, height: 24, angle: 0.0, label: "WALL 5" }
+        ];
+
+        this.waypoints = [
+            { x: 575, y: 920 },
+            { x: 225, y: 740 },
+            { x: 625, y: 560 },
+            { x: 575, y: 380 },
+            { x: 225, y: 220 },
+            { x: 400, y: 110 }
+        ];
+
+        this.blocks = [];
+        this.trafficLights = [];
+    }
+
     #buildCity() {
-        this.spawnPoint = { x: 380, y: 1110, angle: 0.0 };
-        this.target = { x: 820, y: 160, radius: 52, name: "City Central Plaza" };
+        this.spawnPoint = { x: 410, y: 1110, angle: 0.0 };
+        this.target = { x: 850, y: 160, radius: 52, name: "City Central Plaza" };
 
         // Outer City Perimeter Walls (Never penetrable)
         this.roadBorders = [
@@ -60,17 +102,20 @@ class MapSystem {
             [{ x: 40, y: 40 }, { x: 1160, y: 40 }]
         ];
 
-        // 9 Solid Building Blocks
+        // 9 Solid Building Blocks (precisely aligned to 120px avenues and 4-way intersections)
         this.blocks = [
-            { x: 200, y: 200, width: 280, height: 280, label: "WEST COMMERCE" },
-            { x: 600, y: 200, width: 320, height: 280, label: "CIVIC CENTER" },
-            { x: 1000, y: 200, width: 280, height: 280, label: "EAST TERMINAL" },
-            { x: 200, y: 600, width: 280, height: 320, label: "METRO TOWER" },
+            // Top Row (North: Y in [60, 320], height 260, center Y = 190)
+            { x: 190, y: 190, width: 260, height: 260, label: "WEST COMMERCE" },
+            { x: 600, y: 190, width: 320, height: 260, label: "CIVIC CENTER" },
+            { x: 1010, y: 190, width: 260, height: 260, label: "EAST TERMINAL" },
+            // Middle Row (Center: Y in [440, 760], height 320, center Y = 600)
+            { x: 190, y: 600, width: 260, height: 320, label: "METRO TOWER" },
             { x: 600, y: 600, width: 320, height: 320, label: "TECH HEADQUARTERS" },
-            { x: 1000, y: 600, width: 280, height: 320, label: "FINANCIAL PLAZA" },
-            { x: 200, y: 1000, width: 280, height: 280, label: "RESIDENTIAL QUAD" },
-            { x: 600, y: 1000, width: 320, height: 280, label: "LOGISTICS HUB" },
-            { x: 1000, y: 1000, width: 280, height: 280, label: "HARBOR DEPOT" }
+            { x: 1010, y: 600, width: 260, height: 320, label: "FINANCIAL PLAZA" },
+            // Bottom Row (South: Y in [880, 1140], height 260, center Y = 1010)
+            { x: 190, y: 1010, width: 260, height: 260, label: "RESIDENTIAL QUAD" },
+            { x: 600, y: 1010, width: 320, height: 260, label: "LOGISTICS HUB" },
+            { x: 1010, y: 1010, width: 260, height: 260, label: "HARBOR DEPOT" }
         ];
 
         this.blocks.forEach(b => {
@@ -87,12 +132,12 @@ class MapSystem {
         });
 
         this.waypoints = [
-            { x: 380, y: 850 },
-            { x: 380, y: 600 },
-            { x: 380, y: 380 },
-            { x: 600, y: 380 },
-            { x: 820, y: 380 },
-            { x: 820, y: 160 }
+            { x: 410, y: 850 },
+            { x: 410, y: 600 },
+            { x: 410, y: 380 },
+            { x: 600, y: 410 },
+            { x: 850, y: 380 },
+            { x: 850, y: 160 }
         ];
     }
 
@@ -226,8 +271,10 @@ class MapSystem {
         ctx.fillStyle = "#0a0a0a";
         ctx.fillRect(-2000, -2000, 5000, 5000);
 
-        // 2. City Grid Architecture
-        if (this.currentMapId === 'city') {
+        // 2. Track Architecture & Surface
+        if (this.currentMapId === 'straight') {
+            this.#drawStraightDetails(ctx);
+        } else if (this.currentMapId === 'city') {
             this.#drawCityDetails(ctx, trafficLights);
         } else {
             // Standard Grid lines
@@ -271,35 +318,181 @@ class MapSystem {
         ctx.restore();
     }
 
+    #drawStraightDetails(ctx) {
+        // 1. Highway Asphalt Track Surface (X in [100, 700], Y in [60, 1140])
+        ctx.fillStyle = "#0d0d0d";
+        ctx.fillRect(100, 60, 600, 1080);
+
+        // 2. Straight Centerline (X = 400, crisp dashed line running top to bottom)
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([14, 14]);
+        ctx.beginPath();
+        ctx.moveTo(400, 1140);
+        ctx.lineTo(400, 60);
+        ctx.stroke();
+
+        // 3. Lane Dividers (X = 250 and X = 550)
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([8, 16]);
+        ctx.beginPath();
+        ctx.moveTo(250, 1140); ctx.lineTo(250, 60);
+        ctx.moveTo(550, 1140); ctx.lineTo(550, 60);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 4. Start Line Zone (Y = 1080)
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 8]);
+        ctx.beginPath();
+        ctx.moveTo(100, 1080);
+        ctx.lineTo(700, 1080);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Start Line Monospace Label
+        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.font = "bold 10px 'JetBrains Mono', monospace";
+        ctx.textAlign = "left";
+        ctx.fillText("START LINE [0M]", 115, 1102);
+
+        // 5. Distance Milestones Along Outer Walls
+        const milestones = [
+            { y: 920, label: "GATE 1 [160M]" },
+            { y: 740, label: "GATE 2 [340M]" },
+            { y: 560, label: "GATE 3 [520M]" },
+            { y: 380, label: "GATE 4 [700M]" },
+            { y: 220, label: "GATE 5 [860M]" },
+            { y: 110, label: "FINISH [1000M]" }
+        ];
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.font = "9px 'JetBrains Mono', monospace";
+        milestones.forEach(m => {
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(100, m.y); ctx.lineTo(84, m.y);
+            ctx.moveTo(700, m.y); ctx.lineTo(716, m.y);
+            ctx.stroke();
+
+            ctx.textAlign = "right";
+            ctx.fillText(m.label, 80, m.y + 3);
+            ctx.textAlign = "left";
+            ctx.fillText(m.label, 720, m.y + 3);
+        });
+
+        // 6. Finish Line Checkered Banner at Y = 110
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([10, 10]);
+        ctx.beginPath();
+        ctx.moveTo(100, 110);
+        ctx.lineTo(700, 110);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
     #drawCityDetails(ctx, trafficLights) {
-        // Draw Road Centerlines (Avenues)
+        // 1. Draw Road Centerlines (Avenues & Boulevards) precisely between intersections
         ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
         ctx.lineWidth = 1.5;
         ctx.setLineDash([8, 8]);
 
-        // Horizontal Avenues (Y = 380, Y = 820)
-        ctx.beginPath(); ctx.moveTo(40, 380); ctx.lineTo(1160, 380); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(40, 820); ctx.lineTo(1160, 820); ctx.stroke();
+        // Horizontal Avenue 1 (Y = 380) - breaks cleanly at intersections [320, 440] and [760, 880]
+        ctx.beginPath();
+        ctx.moveTo(40, 380); ctx.lineTo(320, 380);
+        ctx.moveTo(440, 380); ctx.lineTo(760, 380);
+        ctx.moveTo(880, 380); ctx.lineTo(1160, 380);
+        ctx.stroke();
 
-        // Vertical Boulevards (X = 380, X = 820)
-        ctx.beginPath(); ctx.moveTo(380, 40); ctx.lineTo(380, 1160); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(820, 40); ctx.lineTo(820, 1160); ctx.stroke();
+        // Horizontal Avenue 2 (Y = 820)
+        ctx.beginPath();
+        ctx.moveTo(40, 820); ctx.lineTo(320, 820);
+        ctx.moveTo(440, 820); ctx.lineTo(760, 820);
+        ctx.moveTo(880, 820); ctx.lineTo(1160, 820);
+        ctx.stroke();
+
+        // Vertical Boulevard 1 (X = 380) - breaks cleanly at intersections [320, 440] and [760, 880]
+        ctx.beginPath();
+        ctx.moveTo(380, 40); ctx.lineTo(380, 320);
+        ctx.moveTo(380, 440); ctx.lineTo(380, 760);
+        ctx.moveTo(380, 880); ctx.lineTo(380, 1160);
+        ctx.stroke();
+
+        // Vertical Boulevard 2 (X = 820)
+        ctx.beginPath();
+        ctx.moveTo(820, 40); ctx.lineTo(820, 320);
+        ctx.moveTo(820, 440); ctx.lineTo(820, 760);
+        ctx.moveTo(820, 880); ctx.lineTo(820, 1160);
+        ctx.stroke();
+
         ctx.setLineDash([]);
 
-        // Intersection Zebra Crosswalks
+        // 2. 4 Major 4-Way Intersections (120x120 exact junction boxes flush with building corners)
         const intersections = [
             { x: 380, y: 380 }, { x: 820, y: 380 },
             { x: 380, y: 820 }, { x: 820, y: 820 }
         ];
 
         intersections.forEach(intPt => {
-            // Draw crosswalk lines around intersection
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+            // Draw exact 120x120 junction boundary matching 4 building corners
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(intPt.x - 60, intPt.y - 60, 120, 120);
+
+            // Tactile Corner Brackets at the 4 curb corners
+            const bLen = 14;
+            ctx.strokeStyle = "#ffffff";
             ctx.lineWidth = 2;
-            ctx.strokeRect(intPt.x - 55, intPt.y - 55, 110, 110);
+            // Top-Left (intPt.x - 60, intPt.y - 60)
+            ctx.beginPath();
+            ctx.moveTo(intPt.x - 60, intPt.y - 60 + bLen);
+            ctx.lineTo(intPt.x - 60, intPt.y - 60);
+            ctx.lineTo(intPt.x - 60 + bLen, intPt.y - 60);
+            ctx.stroke();
+            // Top-Right (intPt.x + 60, intPt.y - 60)
+            ctx.beginPath();
+            ctx.moveTo(intPt.x + 60 - bLen, intPt.y - 60);
+            ctx.lineTo(intPt.x + 60, intPt.y - 60);
+            ctx.lineTo(intPt.x + 60, intPt.y - 60 + bLen);
+            ctx.stroke();
+            // Bottom-Left (intPt.x - 60, intPt.y + 60)
+            ctx.beginPath();
+            ctx.moveTo(intPt.x - 60, intPt.y + 60 - bLen);
+            ctx.lineTo(intPt.x - 60, intPt.y + 60);
+            ctx.lineTo(intPt.x - 60 + bLen, intPt.y + 60);
+            ctx.stroke();
+            // Bottom-Right (intPt.x + 60, intPt.y + 60)
+            ctx.beginPath();
+            ctx.moveTo(intPt.x + 60 - bLen, intPt.y + 60);
+            ctx.lineTo(intPt.x + 60, intPt.y + 60);
+            ctx.lineTo(intPt.x + 60, intPt.y + 60 - bLen);
+            ctx.stroke();
+
+            // Zebra Crosswalk Markings inside each entrance
+            ctx.fillStyle = "rgba(255, 255, 255, 0.16)";
+            // North Crosswalk
+            for (let x = intPt.x - 52; x <= intPt.x + 44; x += 16) {
+                ctx.fillRect(x, intPt.y - 58, 10, 8);
+            }
+            // South Crosswalk
+            for (let x = intPt.x - 52; x <= intPt.x + 44; x += 16) {
+                ctx.fillRect(x, intPt.y + 50, 10, 8);
+            }
+            // West Crosswalk
+            for (let y = intPt.y - 52; y <= intPt.y + 44; y += 16) {
+                ctx.fillRect(intPt.x - 58, y, 8, 10);
+            }
+            // East Crosswalk
+            for (let y = intPt.y - 52; y <= intPt.y + 44; y += 16) {
+                ctx.fillRect(intPt.x + 50, y, 8, 10);
+            }
         });
 
-        // Traffic Light Signals
+        // 3. Traffic Light Signals & Dynamic Stop Lines
         if (trafficLights && trafficLights.length > 0) {
             trafficLights.forEach(tl => {
                 this.#drawTrafficLightSignal(ctx, tl);
@@ -311,37 +504,154 @@ class MapSystem {
         ctx.save();
         ctx.translate(tl.x, tl.y);
 
-        // Signal offset based on direction
-        const ox = tl.direction === 'NS' ? 45 : 0;
-        const oy = tl.direction === 'NS' ? 0 : 45;
+        const isNS = tl.direction === 'NS';
+        const isRed = tl.state === 'RED';
+        const isYellow = tl.state === 'YELLOW';
 
-        // Housing box
-        ctx.fillStyle = "#0c0c0c";
-        ctx.fillRect(ox - 10, oy - 24, 20, 48);
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(ox - 10, oy - 24, 20, 48);
+        // 1. Dynamic Stop Lines
+        // For approaching vehicles, the stop line spans strictly from sidewalk curb to centerline (60px)
+        ctx.save();
+        if (isRed) {
+            ctx.strokeStyle = '#ff2222';
+            ctx.lineWidth = 4;
+            ctx.shadowColor = '#ff2222';
+            ctx.shadowBlur = 8;
+        } else if (isYellow) {
+            ctx.strokeStyle = '#ffcc00';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = '#ffcc00';
+            ctx.shadowBlur = 6;
+        } else {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.lineWidth = 1.5;
+            ctx.shadowBlur = 0;
+        }
 
-        // Red Lamp (top)
-        ctx.beginPath();
-        ctx.arc(ox, oy - 14, 5, 0, Math.PI * 2);
-        ctx.fillStyle = tl.state === 'RED' ? "#ff3333" : "#331111";
-        ctx.fill();
-        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 0.8; ctx.stroke();
+        if (isNS) {
+            // Stop line for Northbound traffic (approaching from South: Y = +60, X in [0, +60])
+            ctx.beginPath();
+            ctx.moveTo(0, 60); ctx.lineTo(60, 60);
+            ctx.stroke();
 
-        // Yellow Lamp (middle)
+            // Stop line for Southbound traffic (approaching from North: Y = -60, X in [-60, 0])
+            ctx.beginPath();
+            ctx.moveTo(-60, -60); ctx.lineTo(0, -60);
+            ctx.stroke();
+        } else {
+            // Stop line for Eastbound traffic (approaching from West: X = -60, Y in [0, +60])
+            ctx.beginPath();
+            ctx.moveTo(-60, 0); ctx.lineTo(-60, 60);
+            ctx.stroke();
+
+            // Stop line for Westbound traffic (approaching from East: X = +60, Y in [-60, 0])
+            ctx.beginPath();
+            ctx.moveTo(60, -60); ctx.lineTo(60, 0);
+            ctx.stroke();
+        }
+        ctx.restore();
+
+        // 2. Physical Curb-Mounted Traffic Signal Housings
+        // Mounted immediately on the sidewalk curb beside each approaching lane's stop line
+        if (isNS) {
+            // Northbound approach signal post (Right curb: X = +68, Y = +52)
+            this.#renderSignalBox(ctx, 68, 52, tl.state);
+            // Southbound approach signal post (Right curb: X = -68, Y = -52)
+            this.#renderSignalBox(ctx, -68, -52, tl.state);
+        } else {
+            // Eastbound approach signal post (Right curb: X = -52, Y = +68)
+            this.#renderSignalBox(ctx, -52, 68, tl.state);
+            // Westbound approach signal post (Right curb: X = +52, Y = -68)
+            this.#renderSignalBox(ctx, 52, -68, tl.state);
+        }
+
+        ctx.restore();
+    }
+
+    #renderSignalBox(ctx, ox, oy, state) {
+        ctx.save();
+
+        // Mounting Post / Base on curb
+        ctx.fillStyle = '#222222';
         ctx.beginPath();
         ctx.arc(ox, oy, 5, 0, Math.PI * 2);
-        ctx.fillStyle = tl.state === 'YELLOW' ? "#ffcc00" : "#332a00";
         ctx.fill();
-        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 0.8; ctx.stroke();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
 
-        // Green Lamp (bottom)
+        // Signal Housing Box (Crisp Industrial Vertical Enclosure)
+        const boxW = 14;
+        const boxH = 36;
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(ox - boxW / 2, oy - boxH / 2, boxW, boxH);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(ox - boxW / 2, oy - boxH / 2, boxW, boxH);
+
+        const r = 3.6;
+
+        // 1. Red Lamp (top: oy - 10)
         ctx.beginPath();
-        ctx.arc(ox, oy + 14, 5, 0, Math.PI * 2);
-        ctx.fillStyle = tl.state === 'GREEN' ? "#00ff66" : "#003314";
-        ctx.fill();
-        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 0.8; ctx.stroke();
+        ctx.arc(ox, oy - 10, r, 0, Math.PI * 2);
+        if (state === 'RED') {
+            ctx.fillStyle = '#ff2222';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+            ctx.save();
+            ctx.fillStyle = 'rgba(255, 34, 34, 0.4)';
+            ctx.beginPath(); ctx.arc(ox, oy - 10, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        } else {
+            ctx.fillStyle = '#240606';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+        }
+
+        // 2. Yellow Lamp (middle: oy)
+        ctx.beginPath();
+        ctx.arc(ox, oy, r, 0, Math.PI * 2);
+        if (state === 'YELLOW') {
+            ctx.fillStyle = '#ffcc00';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+            ctx.save();
+            ctx.fillStyle = 'rgba(255, 204, 0, 0.4)';
+            ctx.beginPath(); ctx.arc(ox, oy, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        } else {
+            ctx.fillStyle = '#221800';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+        }
+
+        // 3. Green Lamp (bottom: oy + 10)
+        ctx.beginPath();
+        ctx.arc(ox, oy + 10, r, 0, Math.PI * 2);
+        if (state === 'GREEN') {
+            ctx.fillStyle = '#00ff66';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 255, 102, 0.4)';
+            ctx.beginPath(); ctx.arc(ox, oy + 10, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        } else {
+            ctx.fillStyle = '#021a08';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+        }
 
         ctx.restore();
     }
@@ -370,17 +680,34 @@ class MapSystem {
         // Target stall
         const w = 40;
         const h = 58;
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fillRect(-w / 2, -h / 2, w, h);
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 2;
         ctx.strokeRect(-w / 2, -h / 2, w, h);
 
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 22px 'JetBrains Mono', monospace";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("🎯", 0, -2);
+        // Sharp Monochrome Vector Crosshair (Zero Emoji, Pure Vector Icon)
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, -3, 11, 0, Math.PI * 2);
+        ctx.stroke();
 
-        ctx.font = "9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(0, -3, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(0, -18); ctx.lineTo(0, -13);
+        ctx.moveTo(0, 7);   ctx.lineTo(0, 12);
+        ctx.moveTo(-18, -3); ctx.lineTo(-13, -3);
+        ctx.moveTo(7, -3);   ctx.lineTo(12, -3);
+        ctx.stroke();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 9px 'JetBrains Mono', monospace";
+        ctx.textAlign = "center";
         ctx.fillText("DESTINATION", 0, h / 2 + 14);
 
         ctx.restore();
@@ -468,10 +795,19 @@ class MapSystem {
         ctx.setLineDash([4, 4]);
         ctx.strokeRect(-24, -28, 48, 56);
         ctx.setLineDash([]);
+
+        // Sharp Vector Direction Arrow (No Emoji)
         ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.moveTo(0, -38);
+        ctx.lineTo(6, -30);
+        ctx.lineTo(-6, -30);
+        ctx.closePath();
+        ctx.fill();
+
         ctx.font = "9px 'JetBrains Mono', monospace";
         ctx.textAlign = "center";
-        ctx.fillText("▲ START", 0, -34);
+        ctx.fillText("START", 0, -18);
         ctx.restore();
     }
 
@@ -542,11 +878,17 @@ class MapSystem {
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 2 / scale;
             ctx.fill(); ctx.stroke();
+
+            // Vector Crosshair Target (No Emoji)
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2 / scale;
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 8 / scale, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 3 / scale, 0, Math.PI * 2);
             ctx.fillStyle = '#ffffff';
-            ctx.font = `bold 24px monospace`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('🎯', t.x, t.y);
+            ctx.fill();
         }
 
         // Spawn Pad
@@ -554,9 +896,15 @@ class MapSystem {
         if (s) {
             ctx.strokeStyle = '#888888';
             ctx.strokeRect(s.x - 22, s.y - 25, 44, 50);
+
+            // Vector Direction Arrow (No Emoji)
             ctx.fillStyle = '#ffffff';
-            ctx.font = `bold 16px monospace`;
-            ctx.fillText('▲', s.x, s.y);
+            ctx.beginPath();
+            ctx.moveTo(s.x, s.y - 12 / scale);
+            ctx.lineTo(s.x + 8 / scale, s.y + 8 / scale);
+            ctx.lineTo(s.x - 8 / scale, s.y + 8 / scale);
+            ctx.closePath();
+            ctx.fill();
         }
 
         ctx.restore();
