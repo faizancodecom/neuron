@@ -29,6 +29,8 @@ class SimulationEngine:
 
         self._last_log_time = 0.0
         self._step_counter = 0
+        self._cached_brain = None
+        self._cached_brain_step = -1
 
         # Load City map by default
         self.map_data = get_preset_map('city')
@@ -194,7 +196,10 @@ class SimulationEngine:
         """
         Replays the simulation from the current champion brain at the chosen speed.
         """
-        self.speed_multiplier = max(1, min(60, int(speed)))
+        try:
+            self.speed_multiplier = max(0.25, min(60.0, float(speed)))
+        except (ValueError, TypeError):
+            self.speed_multiplier = 1.0
         spawn = self.map_data.get('spawnPoint', {'x': 380, 'y': 1110, 'angle': 0.0})
         
         # Reset cars to spawn with current brains
@@ -213,7 +218,10 @@ class SimulationEngine:
         self._init_population()
 
     def set_speed(self, multiplier):
-        self.speed_multiplier = max(1, min(60, int(multiplier)))
+        try:
+            self.speed_multiplier = max(0.25, min(60.0, float(multiplier)))
+        except (ValueError, TypeError):
+            self.speed_multiplier = 1.0
         print(f"[NEURON AI] Simulation speed: {self.speed_multiplier}x.")
 
     def toggle_pause(self):
@@ -275,20 +283,25 @@ class SimulationEngine:
 
         leader_data = None
         if self.best_car:
+            if self._cached_brain is None or (self._step_counter - self._cached_brain_step) >= 6:
+                self._cached_brain = self.best_car.brain.to_dict()
+                self._cached_brain_step = self._step_counter
+
             leader_data = {
                 'x': round(self.best_car.x, 1),
                 'y': round(self.best_car.y, 1),
                 'angle': round(self.best_car.angle, 3),
                 'steering': round(self.best_car.steering_angle, 3),
+                'steering_angle': round(self.best_car.steering_angle, 3),
                 'speed': round(self.best_car.speed, 2),
                 'damaged': self.best_car.damaged,
                 'parked': self.best_car.parked,
                 'fitness': round(self.best_car.fitness, 1),
-                'trail': self.best_car.trail,
+                'trail': self.best_car.trail[-25:],
                 'sensors': [round(1.0 - s['offset'], 3) if s else 0.0 for s in self.best_car.sensor.readings],
                 'inputs': [round(v, 3) for v in self.best_car.last_inputs],
                 'outputs': [round(v, 3) for v in self.best_car.last_outputs],
-                'brain': self.best_car.brain.to_dict()
+                'brain': self._cached_brain
             }
 
         # Traffic lights states

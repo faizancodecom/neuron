@@ -39,33 +39,69 @@ class Sensor:
 
     def _get_reading(self, ray, road_borders, obstacles):
         touches = []
+        rx0, ry0 = ray[0]['x'], ray[0]['y']
+        rx1, ry1 = ray[1]['x'], ray[1]['y']
+        rmin_x = min(rx0, rx1)
+        rmax_x = max(rx0, rx1)
+        rmin_y = min(ry0, ry1)
+        rmax_y = max(ry0, ry1)
 
-        # Road boundaries
+        # 1. Road boundaries with quick AABB test
         for border in road_borders:
-            touch = get_intersection(ray[0], ray[1], border[0], border[1])
+            b0, b1 = border[0], border[1]
+            bmin_x = min(b0['x'], b1['x'])
+            bmax_x = max(b0['x'], b1['x'])
+            if rmax_x < bmin_x or rmin_x > bmax_x:
+                continue
+            bmin_y = min(b0['y'], b1['y'])
+            bmax_y = max(b0['y'], b1['y'])
+            if rmax_y < bmin_y or rmin_y > bmax_y:
+                continue
+
+            touch = get_intersection(ray[0], ray[1], b0, b1)
             if touch:
                 touches.append(touch)
 
-        # Obstacles
+        # 2. Obstacles with cached polygon and AABB test
         for obs in obstacles:
             obs_type = obs.get('type')
-            if obs_type in ('street_light', 'circle'):
-                touch = get_ray_circle_intersection(
-                    ray[0], ray[1],
-                    {'x': obs['x'], 'y': obs['y']},
-                    obs.get('radius', 14)
-                )
-                if touch:
-                    touches.append(touch)
-            elif obs_type in ('barrier', 'rect'):
-                poly = obs.get('polygon')
+            if obs_type in ('barrier', 'rect'):
+                # Cached AABB check
+                aabb = obs.get('_aabb')
+                if aabb is None:
+                    w2 = obs.get('width', 40) / 2.0
+                    h2 = obs.get('height', 40) / 2.0
+                    rad = math.hypot(w2, h2)
+                    ox, oy = obs['x'], obs['y']
+                    aabb = (ox - rad, ox + rad, oy - rad, oy + rad)
+                    obs['_aabb'] = aabb
+
+                if rmax_x < aabb[0] or rmin_x > aabb[1] or rmax_y < aabb[2] or rmin_y > aabb[3]:
+                    continue
+
+                poly = obs.get('polygon') or obs.get('_polygon')
                 if not poly:
                     poly = get_rect_polygon(obs['x'], obs['y'], obs['width'], obs['height'], obs.get('angle', 0.0))
+                    obs['_polygon'] = poly
+
                 n = len(poly)
                 for j in range(n):
                     touch = get_intersection(ray[0], ray[1], poly[j], poly[(j + 1) % n])
                     if touch:
                         touches.append(touch)
+
+            elif obs_type in ('street_light', 'circle'):
+                rad = obs.get('radius', 14)
+                ox, oy = obs['x'], obs['y']
+                if rmax_x < ox - rad or rmin_x > ox + rad or rmax_y < oy - rad or rmin_y > oy + rad:
+                    continue
+                touch = get_ray_circle_intersection(
+                    ray[0], ray[1],
+                    {'x': ox, 'y': oy},
+                    rad
+                )
+                if touch:
+                    touches.append(touch)
 
         if not touches:
             return None

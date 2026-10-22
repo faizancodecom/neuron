@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Industrial Dark Background -->
+  <rect width="64" height="64" fill="#000000"/>
+  <!-- Sharp Outer Perimeter Frame -->
+  <rect x="2" y="2" width="60" height="60" fill="none" stroke="#ffffff" stroke-width="2.5"/>
+
+  <!-- Forward Apex Sensor / Navigation Arrow -->
+  <polygon points="32,9 37,17 27,17" fill="#ffffff"/>
+
+  <!-- Neural Network Synapse Lines forming "N" & Trajectory -->
+  <line x1="16" y1="48" x2="16" y2="18" stroke="#ffffff" stroke-width="4.5" stroke-linecap="square"/>
+  <line x1="48" y1="48" x2="48" y2="18" stroke="#ffffff" stroke-width="4.5" stroke-linecap="square"/>
+  <polyline points="16,18 32,38 48,18" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linejoin="miter"/>
+
+  <!-- Synaptic Hub Nodes -->
+  <rect x="13.5" y="15.5" width="5" height="5" fill="#ffffff"/>
+  <rect x="45.5" y="15.5" width="5" height="5" fill="#ffffff"/>
+  <rect x="13.5" y="45.5" width="5" height="5" fill="#ffffff"/>
+  <rect x="45.5" y="45.5" width="5" height="5" fill="#ffffff"/>
+
+  <!-- Core Neural Decision Node -->
+  <circle cx="32" cy="38" r="4.5" fill="#000000" stroke="#ffffff" stroke-width="3"/>
+  <circle cx="32" cy="38" r="1.5" fill="#ffffff"/>
+
+  <!-- Autonomous Wheel Geometry Notches (Left & Right) -->
+  <rect x="7" y="18" width="3" height="8" fill="#ffffff"/>
+  <rect x="7" y="38" width="3" height="8" fill="#ffffff"/>
+  <rect x="54" y="18" width="3" height="8" fill="#ffffff"/>
+  <rect x="54" y="38" width="3" height="8" fill="#ffffff"/>
+</svg>

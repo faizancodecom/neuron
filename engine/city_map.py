@@ -102,28 +102,6 @@ def build_city_map():
             'isBuilding': True
         })
 
-    # Street light pillars along avenues (decorative & collision points)
-    sidewalk_poles = [
-        # North Avenue poles
-        {'x': 390, 'y': 310}, {'x': 810, 'y': 310},
-        {'x': 390, 'y': 450}, {'x': 810, 'y': 450},
-        # South Avenue poles
-        {'x': 390, 'y': 750}, {'x': 810, 'y': 750},
-        {'x': 390, 'y': 890}, {'x': 810, 'y': 890},
-        # Mid corridors
-        {'x': 600, 'y': 310}, {'x': 600, 'y': 450},
-        {'x': 600, 'y': 750}, {'x': 600, 'y': 890}
-    ]
-
-    for sp in sidewalk_poles:
-        obstacles.append({
-            'type': 'street_light',
-            'x': sp['x'],
-            'y': sp['y'],
-            'radius': 10,
-            'glowRadius': 80
-        })
-
     # 4 Major Intersections Traffic Lights:
     # Int 1: (380, 380), Int 2: (820, 380), Int 3: (380, 820), Int 4: (820, 820)
     traffic_lights = [

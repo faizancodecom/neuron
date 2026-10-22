@@ -3,60 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURON // SIMULATION LAB</title>
+    <title>NEURON SIMULATION LAB</title>
     <meta name="description" content="Sharp, high-precision autonomous driving neuroevolution simulator.">
     <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'><rect width='24' height='24'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="alternate icon" href="/static/favicon.svg">
 </head>
 <body>
 
     <!-- Header Navigation Bar (Sharp Non-AI Slop) -->
     <header class="app-header">
-        <!-- Top Left: Pure Minimalist Typography (No Icon, No AI Version Badge) -->
+        <!-- Top Left: Minimalist Typography -->
         <div class="brand-section">
             <span class="brand-name">NEURON</span>
-            <span class="brand-sub">// SIM.LAB</span>
+            <span class="brand-sub">SIM LAB</span>
         </div>
 
-        <!-- Center Controls: Only Essential Controls -->
+        <!-- Center Controls: Minimal & Tactical -->
         <div class="header-center-controls">
             <!-- Run / Pause -->
             <button id="btnPlay" class="btn btn-sharp" title="Toggle Simulation Execution">
                 <span id="playIcon">
-                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 </span>
                 <span id="playText">START</span>
             </button>
 
-            <!-- Warp Speed Toggle Button (wrap karne ka speed ke liye) -->
-            <button id="btnWarpSpeed" class="btn btn-sharp" title="Toggle 40X Warp Speed">
-                <span id="warpIcon">⚡</span>
-                <span id="warpText">WARP: OFF</span>
+            <!-- Unified Speed & Vehicle Population Settings Button -->
+            <button id="btnSpeedConfig" class="btn btn-sharp" title="Configure Simulation Speed & Vehicle Population">
+                <span id="speedIcon">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="9"/>
+                        <polyline points="12 7 12 12 15 15"/>
+                    </svg>
+                </span>
+                <span id="speedConfigLabel">SPEED: 1X</span>
             </button>
 
-            <!-- Car Population Selector (amount of car selector) -->
-            <div class="header-control-group">
-                <label for="carAmountSelect">CARS:</label>
-                <select id="carAmountSelect" class="sharp-select" title="Amount of Cars in Simulation">
-                    <option value="20">20 CARS</option>
-                    <option value="50">50 CARS</option>
-                    <option value="80" selected>80 CARS</option>
-                    <option value="120">120 CARS</option>
-                    <option value="200">200 CARS</option>
-                    <option value="300">300 CARS</option>
-                </select>
-            </div>
-
-            <!-- Map / Track Selector Button -->
-            <button id="btnOpenMapModal" class="btn btn-sharp" title="Select Map or Create New Track with Obstacles">
+            <!-- Map / City Selector Button -->
+            <button id="btnOpenMapModal" class="btn btn-sharp" title="Select Track Environment">
                 <span>MAPS &amp; TRACKS</span>
-                <span id="activeMapBadge" class="btn-sub-label">[ BOULEVARD ]</span>
+                <span id="activeMapBadge" class="btn-sub-label">[ METRO CITY ]</span>
             </button>
         </div>
 
-        <!-- Right Header Actions: Top Save Button + Load + Utilities -->
+        <!-- Right Header Actions -->
         <div class="header-actions">
-            <!-- Top Save Button (top pe honge save ka button) -->
+            <!-- Save Button -->
             <button id="btnSaveModel" class="btn btn-sharp btn-primary" title="Save Champion Brain to Server">
                 <span>SAVE BRAIN</span>
             </button>
@@ -70,18 +63,13 @@
             <button id="btnReset" class="btn btn-sharp" title="Reset Simulation to Generation 1">
                 <span>RESET</span>
             </button>
-
-            <!-- Audio Toggle -->
-            <button id="btnAudio" class="btn-sharp btn-icon" title="Toggle Synthesizer Audio">
-                <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-            </button>
         </div>
     </header>
 
     <!-- Main Viewport -->
     <main class="viewport-main">
         
-        <!-- Top HUD Telemetry Strip (Sharp Monospace Non-AI Slop) -->
+        <!-- Top HUD Telemetry Strip -->
         <div class="viewport-hud">
             <div class="hud-item">
                 <span class="hud-label">GEN</span>
@@ -90,11 +78,11 @@
             <span class="hud-divider">|</span>
             <div class="hud-item">
                 <span class="hud-label">ALIVE</span>
-                <span id="hudAlive" class="hud-val">80 / 80</span>
+                <span id="hudAlive" class="hud-val">40 / 40</span>
             </div>
             <span class="hud-divider">|</span>
             <div class="hud-item" id="hudParkedCount">
-                <span class="hud-label">PARKED</span>
+                <span class="hud-label">ARRIVED</span>
                 <span id="hudParked" class="hud-val">0</span>
             </div>
             <span class="hud-divider">|</span>
@@ -109,7 +97,7 @@
             </div>
             <span class="hud-divider">|</span>
             <div class="hud-item">
-                <span class="hud-label">DIST TO LOT</span>
+                <span class="hud-label">TARGET DIST</span>
                 <span id="hudDist" class="hud-val">--</span>
             </div>
             <span class="hud-divider">|</span>
@@ -122,73 +110,112 @@
                 <span class="hud-label">SPEED</span>
                 <span id="hudSpeed" class="hud-val">0.0 px/f</span>
             </div>
-            <span class="hud-divider">|</span>
-            <div class="hud-item">
-                <span class="hud-label">ENGINE</span>
-                <span id="hudEngineStatus" class="hud-val" style="color: #ffffff; font-weight: 800;">PYTHON CONNECTING...</span>
-            </div>
         </div>
 
-        <!-- Simulation Canvas Container (Locked from map editing) -->
+        <!-- Simulation Canvas Container -->
         <div id="canvasContainer">
             <canvas id="simCanvas"></canvas>
         </div>
 
-        <!-- Bottom Left Status Bar -->
-        <div class="viewport-bottom-bar">
-            <span>GOAL: DOCK IN PARKING ZONE [P] // AVOID ALL OBSTACLES &amp; WALLS</span>
-            <span class="hud-divider">|</span>
-            <span id="simStatusText">AUTO-LEARNING ACTIVE</span>
-            <span class="hud-divider">|</span>
-            <span>DRAG CANVAS TO PAN // SCROLL TO ZOOM</span>
-        </div>
-
-        <!-- Floating Single Compact Neuron Map Box (Sirf ek map ho neurons ka jisko bada karne pe information aaye) -->
+        <!-- Floating Single Compact Neuron Map Box -->
         <div class="floating-neuron-card" id="neuronPreviewCard" title="Click to Expand Full Neural Network Information">
             <div class="neuron-card-header">
                 <span class="neuron-card-title">NEURON NETWORK MAP</span>
-                <button id="btnExpandNetwork" class="btn-micro" title="Expand Full Neural Network Architecture">[ ⛶ EXPAND ]</button>
+                <button id="btnExpandNetwork" class="btn-micro" title="Expand Full Neural Network Architecture">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="10,2 14,2 14,6"/><polyline points="6,14 2,14 2,10"/><line x1="14" y1="2" x2="9" y2="7"/><line x1="2" y1="14" x2="7" y2="9"/>
+                    </svg>
+                    <span>EXPAND</span>
+                </button>
             </div>
             <div class="neuron-card-body">
                 <canvas id="networkCanvas"></canvas>
             </div>
             <div class="neuron-card-footer">
                 <span>CLICK TO EXPAND DETAILS</span>
-                <span id="hudActiveBrainArch">[10 &rarr; 12 &rarr; 8 &rarr; 4]</span>
+                <span id="hudActiveBrainArch">[12 &rarr; 14 &rarr; 10 &rarr; 4]</span>
             </div>
         </div>
 
     </main>
 
-    <!-- Expanded Neuron Information Modal (Bada karne pe hi andar poori information aaye) -->
+    <!-- Unified Modal: Speed & Vehicle Population Configuration -->
+    <div class="modal-overlay" id="speedConfigModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-window" style="width: 480px;">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <span class="modal-tag">SETTINGS</span>
+                    <h3 class="modal-title">WARP SPEED &amp; VEHICLE CONFIGURATION</h3>
+                </div>
+                <button class="modal-close btn-sharp btn-close-x" title="Close Window">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Section 1: Simulation Speed / Warp -->
+                <label class="mono-label">SELECT SIMULATION SPEED (WARP MULTIPLIER):</label>
+                <div class="replay-speed-grid" id="simSpeedGrid">
+                    <button class="btn btn-sharp speed-pill" data-speed="0.5">0.5X SLOW</button>
+                    <button class="btn btn-sharp speed-pill active" data-speed="1">1X NORMAL</button>
+                    <button class="btn btn-sharp speed-pill" data-speed="2">2X FAST</button>
+                    <button class="btn btn-sharp speed-pill" data-speed="5">5X TURBO</button>
+                    <button class="btn btn-sharp speed-pill" data-speed="10">10X HYPER</button>
+                    <button class="btn btn-sharp speed-pill" data-speed="20">20X RAPID</button>
+                    <button class="btn btn-sharp speed-pill" data-speed="40">40X WARP</button>
+                </div>
+
+                <!-- Section 2: Vehicle Population Control -->
+                <label class="mono-label" style="margin-top: 18px;">SELECT VEHICLE POPULATION (AMOUNT OF CARS):</label>
+                <div class="replay-speed-grid" id="popSizeGrid">
+                    <button class="btn btn-sharp pop-pill" data-size="20">20 CARS</button>
+                    <button class="btn btn-sharp pop-pill active" data-size="40">40 CARS</button>
+                    <button class="btn btn-sharp pop-pill" data-size="60">60 CARS</button>
+                    <button class="btn btn-sharp pop-pill" data-size="80">80 CARS</button>
+                    <button class="btn btn-sharp pop-pill" data-size="100">100 CARS</button>
+                </div>
+
+                <p class="mono-sub" style="margin-top: 16px;">
+                    Adjusts real-time simulation warp speed multiplier and active autonomous vehicle count running on the Python neural network engine.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sharp modal-close">CANCEL</button>
+                <div style="display: flex; gap: 8px;">
+                    <button id="btnReplayFromSettings" class="btn btn-sharp" title="Reset Vehicles to Spawn &amp; Run at Designated Speed">↺ REPLAY</button>
+                    <button id="btnApplySpeedSettings" class="btn btn-sharp btn-primary">APPLY SETTINGS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expanded Neuron Information Modal -->
     <div class="modal-overlay" id="neuronDetailModal">
         <div class="modal-backdrop"></div>
         <div class="modal-window modal-window-large">
             <div class="modal-header">
                 <div class="modal-header-left">
-                    <span class="modal-tag">// ARCHITECTURE INSPECTOR</span>
+                    <span class="modal-tag">ARCHITECTURE INSPECTOR</span>
                     <h3 class="modal-title">CHAMPION NEURAL NETWORK &amp; TELEMETRY</h3>
                 </div>
-                <button class="modal-close btn-sharp">&times; CLOSE</button>
+                <button class="modal-close btn-sharp btn-close-x">&times;</button>
             </div>
             <div class="neuron-modal-content">
                 <!-- Left: Full Scale Neural Architecture Canvas -->
                 <div class="neuron-modal-left">
                     <div class="sub-panel-header">
                         <span>LIVE SYNAPSE ARCHITECTURE &amp; WEIGHT ACTIVATIONS</span>
-                        <span class="tech-badge">[10 INPUTS &bull; 12 HIDDEN 1 &bull; 8 HIDDEN 2 &bull; 4 OUTPUTS]</span>
+                        <span class="tech-badge">[12 INPUTS | 14 HIDDEN 1 | 10 HIDDEN 2 | 4 OUTPUTS]</span>
                     </div>
                     <div class="neuron-large-canvas-wrap">
                         <canvas id="networkDetailCanvas"></canvas>
                     </div>
                     <div class="neuron-vector-legend">
                         <div class="legend-col">
-                            <strong>INPUT VECTORS (10):</strong>
-                            <span>R1&ndash;R7: LiDAR Raycast Proximities | SPD: Velocity | DIR: Angular Error | DST: Target Vector</span>
+                            <strong>INPUT VECTORS (12):</strong>
+                            <span>R1&ndash;R7: LiDAR Raycasts | SPD: Speed | STEER: Wheel Angle | DIR: Heading Error | DST: Target Dist | SIG: Traffic Light</span>
                         </div>
                         <div class="legend-col">
                             <strong>OUTPUT CONTROLS (4):</strong>
-                            <span>FWD: Accelerate | REV: Brake/Reverse | LFT: Steer Left | RGT: Steer Right</span>
+                            <span>FWD: Throttle | REV: Brake | LFT: Steer Left | RGT: Steer Right</span>
                         </div>
                     </div>
                 </div>
@@ -225,11 +252,11 @@
                                 <span id="detailChampFit" class="telem-val">0.00</span>
                             </div>
                             <div class="telem-row">
-                                <span class="telem-key">SUCCESSFUL PARKS</span>
+                                <span class="telem-key">SUCCESSFUL ARRIVALS</span>
                                 <span id="detailParkedTotal" class="telem-val">0</span>
                             </div>
                             <div class="telem-row">
-                                <span class="telem-key">PARKING SUCCESS RATE</span>
+                                <span class="telem-key">SUCCESS RATE</span>
                                 <span id="detailSuccessRate" class="telem-val">0.0%</span>
                             </div>
                             <div class="telem-row">
@@ -238,14 +265,14 @@
                             </div>
                             <div class="telem-row">
                                 <span class="telem-key">ACTIVE POPULATION</span>
-                                <span id="detailPopSize" class="telem-val">80 CARS</span>
+                                <span id="detailPopSize" class="telem-val">40 CARS</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <span class="mono-sub">NEURON AI ENGINE // CONTINUOUS EVOLUTION ACTIVE</span>
+                <span class="mono-sub">NEURON AI ENGINE CONTINUOUS REAL-TIME LEARNING</span>
                 <button class="btn btn-sharp modal-close">CLOSE [ESC]</button>
             </div>
         </div>
@@ -259,20 +286,20 @@
             <!-- Modal Header with Tab Toggles -->
             <div class="modal-header">
                 <div class="modal-header-left">
-                    <span class="modal-tag">// TRACK &amp; OBSTACLE STUDIO</span>
+                    <span class="modal-tag">TRACK &amp; OBSTACLE STUDIO</span>
                     <h3 class="modal-title" id="mapModalTitle">SELECT TRACK ENVIRONMENT</h3>
                 </div>
                 <div class="modal-tab-bar">
                     <button id="tabMapList" class="btn btn-sharp active">TRACK GALLERY (THUMBNAILS)</button>
                     <button id="tabMapEditor" class="btn btn-sharp">+ CREATE / EDIT OBSTACLES</button>
-                    <button class="modal-close btn-sharp">&times;</button>
+                    <button class="modal-close btn-sharp btn-close-x">&times;</button>
                 </div>
             </div>
 
             <!-- Tab 1: Map Gallery with Canvas Thumbnails -->
             <div id="viewMapGallery" class="modal-body-panel">
                 <div class="gallery-toolbar">
-                    <p class="mono-sub">Select an environment thumbnail to deploy. Tracks are protected from accidental edits during simulation.</p>
+                    <p class="mono-sub">Select an environment thumbnail to deploy. Tracks are strictly enclosed to prevent cars from leaving bounds.</p>
                     <button id="btnCreateNewTrackTop" class="btn btn-sharp btn-primary">+ NEW CUSTOM TRACK</button>
                 </div>
                 
@@ -281,7 +308,7 @@
                 </div>
             </div>
 
-            <!-- Tab 2: Tactical Obstacle & Map Studio (place obstacle add wale mein na tum bahut achhe se kaam karna) -->
+            <!-- Tab 2: Tactical Obstacle & Map Studio -->
             <div id="viewMapEditor" class="modal-body-panel" style="display: none;">
                 <div class="editor-layout">
                     <!-- Left: Obstacle Tools Panel -->
@@ -294,50 +321,56 @@
                         
                         <div class="tool-buttons-list">
                             <button class="btn btn-sharp tool-btn active" data-tool="add_barrier_h">
-                                <span>▰ BARRIER (HORIZONTAL)</span>
+                                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="5" width="14" height="6" stroke="currentColor" stroke-width="1"/></svg>
+                                <span>BARRIER (HORIZONTAL)</span>
                             </button>
                             <button class="btn btn-sharp tool-btn" data-tool="add_barrier_v">
-                                <span>▱ BARRIER (VERTICAL)</span>
+                                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="5" y="1" width="6" height="14" stroke="currentColor" stroke-width="1"/></svg>
+                                <span>BARRIER (VERTICAL)</span>
                             </button>
                             <button class="btn btn-sharp tool-btn" data-tool="add_light">
-                                <span>◉ PILLAR / STREET LIGHT</span>
+                                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1"/></svg>
+                                <span>PILLAR</span>
                             </button>
                             <button class="btn btn-sharp tool-btn" data-tool="move_target">
-                                <span>🎯 SET PARKING ZONE</span>
+                                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2"/><line x1="8" y1="0" x2="8" y2="4"/><line x1="8" y1="12" x2="8" y2="16"/><line x1="0" y1="8" x2="4" y2="8"/><line x1="12" y1="8" x2="16" y2="8"/></svg>
+                                <span>SET DESTINATION</span>
                             </button>
                             <button class="btn btn-sharp tool-btn" data-tool="move_spawn">
-                                <span>▲ SET START SPAWN</span>
+                                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><polygon points="8,2 14,14 2,14"/></svg>
+                                <span>SET START SPAWN</span>
                             </button>
                             <button class="btn btn-sharp tool-btn btn-danger" data-tool="erase_obstacle">
-                                <span>⌫ DELETE OBSTACLE</span>
+                                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg>
+                                <span>DELETE OBSTACLE</span>
                             </button>
                         </div>
 
                         <div class="editor-section-title" style="margin-top: 16px;">TRACK COMMANDS</div>
                         <button id="btnClearEditorObstacles" class="btn btn-sharp btn-block">CLEAR ALL OBSTACLES</button>
-                        <button id="btnResetToPreset" class="btn btn-sharp btn-block">RESET TO BOULEVARD</button>
+                        <button id="btnResetToPreset" class="btn btn-sharp btn-block">RESET TO CITY GRID</button>
 
                         <div class="editor-stats-box">
                             <div>OBSTACLES PLACED: <strong id="editorObsCount">0</strong></div>
-                            <div>START POS: <strong id="editorSpawnPos">400, 910</strong></div>
-                            <div>TARGET POS: <strong id="editorTargetPos">400, 110</strong></div>
+                            <div>START POS: <strong id="editorSpawnPos">380, 1110</strong></div>
+                            <div>TARGET POS: <strong id="editorTargetPos">820, 160</strong></div>
                         </div>
                     </div>
 
                     <!-- Right: Editor Canvas -->
                     <div class="editor-canvas-container">
                         <div class="canvas-ruler-header">
-                            <span>COORDINATE WORKSPACE [800 x 1000]</span>
+                            <span>COORDINATE WORKSPACE [1200 x 1200]</span>
                             <span id="editorCursorCoords">X: 0 | Y: 0</span>
                         </div>
                         <div class="editor-canvas-wrapper" id="editorCanvasWrapper">
-                            <canvas id="editorCanvas" width="800" height="1000"></canvas>
+                            <canvas id="editorCanvas" width="1200" height="1200"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <div class="editor-footer-actions">
-                    <button id="btnBackToGallery" class="btn btn-sharp">&larr; BACK TO TRACK GALLERY</button>
+                    <button id="btnBackToGallery" class="btn btn-sharp">BACK TO TRACK GALLERY</button>
                     <div style="display: flex; gap: 8px;">
                         <button id="btnSaveCustomTrack" class="btn btn-sharp btn-primary">SAVE AS CUSTOM TRACK</button>
                         <button id="btnDeployCustomTrack" class="btn btn-sharp">APPLY &amp; RUN SIMULATION</button>
@@ -348,20 +381,20 @@
         </div>
     </div>
 
-    <!-- Modal: Save Model to Flask Server -->
+    <!-- Modal: Save Model to Server -->
     <div class="modal-overlay" id="saveModal">
         <div class="modal-backdrop"></div>
         <div class="modal-window">
             <div class="modal-header">
                 <div class="modal-header-left">
-                    <span class="modal-tag">// PERSISTENCE ENGINE</span>
+                    <span class="modal-tag">PERSISTENCE ENGINE</span>
                     <h3 class="modal-title">SAVE TRAINED BRAIN</h3>
                 </div>
-                <button class="modal-close btn-sharp">&times;</button>
+                <button class="modal-close btn-sharp btn-close-x">&times;</button>
             </div>
             <div class="modal-body">
                 <label for="modelNameInput" class="mono-label">BRAIN MODEL IDENTIFIER</label>
-                <input type="text" id="modelNameInput" class="sharp-input" placeholder="e.g. Master_Park_Gen25">
+                <input type="text" id="modelNameInput" class="sharp-input" placeholder="e.g. City_Navigator_Gen15">
                 <p class="mono-sub" style="margin-top: 8px;">Saves current champion neural network weights, biases, and generational fitness metrics to local server storage.</p>
             </div>
             <div class="modal-footer">
@@ -371,17 +404,32 @@
         </div>
     </div>
 
-    <!-- Modal: Load Model from Flask Server -->
+    <!-- Modal: Load Model from Server -->
     <div class="modal-overlay" id="loadModal">
         <div class="modal-backdrop"></div>
         <div class="modal-window">
             <div class="modal-header">
                 <div class="modal-header-left">
-                    <span class="modal-tag">// MODEL REPOSITORY</span>
+                    <span class="modal-tag">MODEL REPOSITORY</span>
                     <h3 class="modal-title">LOAD SAVED BRAIN</h3>
                 </div>
-                <button class="modal-close btn-sharp">&times;</button>
+                <button class="modal-close btn-sharp btn-close-x">&times;</button>
             </div>
+            <div class="modal-body">
+                <div class="models-list" id="modelsList">
+                    <div class="mono-sub">Scanning saved neural models...</div>
+                </div>
+                <div style="margin-top: 14px; border-top: 1px solid #222; padding-top: 12px; display: flex; gap: 8px;">
+                    <button id="btnExportJSON" class="btn btn-sharp" style="flex: 1;">EXPORT JSON</button>
+                    <button id="btnImportJSON" class="btn btn-sharp" style="flex: 1;">IMPORT JSON</button>
+                    <input type="file" id="jsonFileInput" accept=".json" style="display:none;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sharp modal-close">CLOSE</button>
+            </div>
+        </div>
+    </div>
             <div class="modal-body">
                 <div class="models-list" id="modelsList">
                     <div class="mono-sub">Scanning saved neural models...</div>

@@ -21,7 +21,7 @@ os.makedirs(MAPS_DIR, exist_ok=True)
 # -------------------------------------------------------------
 # Initialize Live Python AI Simulation Engine
 # -------------------------------------------------------------
-engine = SimulationEngine(population_size=80, mutation_rate=0.12, episode_duration=28)
+engine = SimulationEngine(population_size=40, mutation_rate=0.12, episode_duration=28)
 engine_lock = threading.Lock()
 
 
@@ -31,13 +31,20 @@ def simulation_worker():
     Prints terminal outputs and advances generations continuously.
     """
     target_dt = 1.0 / 60.0  # 60 FPS physics tick
+    tick_counter = 0
     while True:
         t0 = time.time()
+        tick_counter += 1
         with engine_lock:
             if engine.is_running:
-                # Execute speed_multiplier steps per tick
-                for _ in range(engine.speed_multiplier):
-                    engine.step()
+                mult = engine.speed_multiplier
+                if mult < 1.0:
+                    step_interval = max(2, int(round(1.0 / max(0.1, mult))))
+                    if tick_counter % step_interval == 0:
+                        engine.step()
+                else:
+                    for _ in range(int(mult)):
+                        engine.step()
 
         elapsed = time.time() - t0
         sleep_time = max(0.001, target_dt - elapsed)
@@ -76,6 +83,7 @@ def ws_stream(ws):
 
             # Push state frame to HTML frontend
             ws.send(json.dumps(state))
+            time.sleep(0.02)
 
     except Exception as e:
         pass
@@ -91,12 +99,15 @@ def handle_client_action(payload):
     with engine_lock:
         if action == 'toggle_pause':
             engine.toggle_pause()
+        elif action == 'replay':
+            speed = payload.get('speed', 1)
+            engine.replay(speed)
         elif action == 'set_speed':
             engine.set_speed(payload.get('speed', 1))
         elif action == 'set_population':
             engine.set_population(payload.get('size', 80))
         elif action == 'set_map_preset':
-            preset_id = payload.get('preset', 'boulevard')
+            preset_id = payload.get('preset', 'city')
             data = get_preset_map(preset_id)
             engine.set_map(data)
         elif action == 'set_custom_map':

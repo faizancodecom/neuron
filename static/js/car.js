@@ -317,6 +317,51 @@ class Car {
 
         const w = this.width;
         const h = this.height;
+        const steer = this.steeringAngle || 0;
+
+        // -------------------------------------------------------------
+        // Draw 4 Physical Wheels (Front Wheels Turn with Ackermann Steering)
+        // -------------------------------------------------------------
+        const wheelW = 5;
+        const wheelH = 11;
+        const frontY = -h * 0.30;
+        const rearY = h * 0.30;
+        const leftX = -w / 2 - 1.5;
+        const rightX = w / 2 + 1.5;
+
+        ctx.fillStyle = isLeader ? "#ffffff" : "#444444";
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+
+        // 1. Rear-Left Wheel (Fixed)
+        ctx.save();
+        ctx.translate(leftX, rearY);
+        ctx.fillRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.strokeRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.restore();
+
+        // 2. Rear-Right Wheel (Fixed)
+        ctx.save();
+        ctx.translate(rightX, rearY);
+        ctx.fillRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.strokeRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.restore();
+
+        // 3. Front-Left Wheel (Physically turns with steering angle!)
+        ctx.save();
+        ctx.translate(leftX, frontY);
+        ctx.rotate(steer);
+        ctx.fillRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.strokeRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.restore();
+
+        // 4. Front-Right Wheel (Physically turns with steering angle!)
+        ctx.save();
+        ctx.translate(rightX, frontY);
+        ctx.rotate(steer);
+        ctx.fillRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.strokeRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.restore();
 
         // High contrast monochrome car styling (Sharp Non-AI Slop)
         if (this.parked) {

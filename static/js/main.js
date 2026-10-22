@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let latestState = null;
     let lastGenRecorded = 0;
     let prevParkedCount = 0;
+    let lastNetworkDrawTime = 0;
 
     // Viewport & Camera
     let camera = { x: 400, y: 500, zoom: 0.95 };
@@ -156,11 +157,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update HUD metrics
         updateHUDFromState(state);
 
-        // Render Simulation Canvas
-        renderSimulationFrame(state);
-
-        // Render Neural Network Visualizer (from Python brain data)
-        if (networkCtx && state.leader && state.leader.brain) {
+        // Render Neural Network Visualizer (throttled to save CPU & avoid lag)
+        const now = performance.now();
+        if (networkCtx && state.leader && state.leader.brain && (now - lastNetworkDrawTime > 160)) {
+            lastNetworkDrawTime = now;
             Visualizer.drawNetwork(networkCtx, state.leader.brain, false);
         }
 
@@ -176,6 +176,18 @@ document.addEventListener('DOMContentLoaded', () => {
             updateDetailModalStats(state);
         }
     }
+
+    // -------------------------------------------------------------
+    // Independent 60 FPS Animation & Render Loop
+    // Guarantees smooth camera navigation and prevents freezing
+    // -------------------------------------------------------------
+    function renderLoop() {
+        if (latestState) {
+            renderSimulationFrame(latestState);
+        }
+        requestAnimationFrame(renderLoop);
+    }
+    requestAnimationFrame(renderLoop);
 
     // -------------------------------------------------------------
     // Render Simulation Canvas (Using Python Coordinates)
@@ -195,8 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
         simCtx.scale(camera.zoom, camera.zoom);
         simCtx.translate(-camera.x, -camera.y);
 
-        // 1. Draw Map System
-        mapSystem.draw(simCtx);
+        // 1. Draw Map System with Live Traffic Light State
+        mapSystem.draw(simCtx, state.trafficLights || []);
 
         // 2. Draw Leader Trail from Python
         if (state.leader && state.leader.trail && state.leader.trail.length > 1) {
@@ -213,32 +225,86 @@ document.addEventListener('DOMContentLoaded', () => {
             simCtx.restore();
         }
 
-        // 3. Draw All Population Cars (compact: [x, y, angle, status])
+        // 3. Draw All Population Cars (compact: [x, y, angle, steering_angle, status])
         // status: 0 = living, 1 = damaged, 2 = parked
         const cars = state.cars || [];
         for (let i = 0; i < cars.length; i++) {
-            const [cx, cy, cangle, status] = cars[i];
-            drawCarAt(simCtx, cx, cy, cangle, status, false);
+            const car = cars[i];
+            const cx = car[0];
+            const cy = car[1];
+            const cangle = car[2];
+            const csteer = car[3] !== undefined ? car[3] : 0;
+            const cstatus = car[4] !== undefined ? car[4] : (car[3] !== undefined && typeof car[3] === 'number' && Number.isInteger(car[3]) && car.length === 4 ? car[3] : 0);
+            drawCarAt(simCtx, cx, cy, cangle, csteer, cstatus, false);
         }
 
         // 4. Draw Leader Champion Car on Top with Sensors
         if (state.leader) {
             const ld = state.leader;
             drawLeaderSensors(simCtx, ld);
-            drawCarAt(simCtx, ld.x, ld.y, ld.angle, ld.parked ? 2 : (ld.damaged ? 1 : 0), true);
+            const steerAngle = ld.steering !== undefined ? ld.steering : (ld.steering_angle || 0);
+            drawCarAt(simCtx, ld.x, ld.y, ld.angle, steerAngle, ld.parked ? 2 : (ld.damaged ? 1 : 0), true);
         }
 
         simCtx.restore();
     }
 
-    function drawCarAt(ctx, x, y, angle, status, isLeader) {
+    function drawCarAt(ctx, x, y, angle, steeringAngle = 0, status = 0, isLeader = false) {
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(-angle);
 
         const w = 22;
         const h = 40;
+        const steer = steeringAngle || 0;
 
+        // -------------------------------------------------------------
+        // Draw 4 Physical Wheels (Front Wheels Turn with Ackermann Steering)
+        // -------------------------------------------------------------
+        const wheelW = 5;
+        const wheelH = 11;
+        const frontY = -h * 0.30;
+        const rearY = h * 0.30;
+        const leftX = -w / 2 - 1.5;
+        const rightX = w / 2 + 1.5;
+
+        ctx.fillStyle = isLeader ? "#ffffff" : (status === 1 ? "#222222" : "#555555");
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+
+        // 1. Rear-Left Wheel (Fixed Alignment)
+        ctx.save();
+        ctx.translate(leftX, rearY);
+        ctx.fillRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.strokeRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.restore();
+
+        // 2. Rear-Right Wheel (Fixed Alignment)
+        ctx.save();
+        ctx.translate(rightX, rearY);
+        ctx.fillRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.strokeRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.restore();
+
+        // 3. Front-Left Wheel (Physically turns with steering angle!)
+        ctx.save();
+        ctx.translate(leftX, frontY);
+        ctx.rotate(steer);
+        ctx.fillRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.strokeRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.restore();
+
+        // 4. Front-Right Wheel (Physically turns with steering angle!)
+        ctx.save();
+        ctx.translate(rightX, frontY);
+        ctx.rotate(steer);
+        ctx.fillRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.strokeRect(-wheelW / 2, -wheelH / 2, wheelW, wheelH);
+        ctx.restore();
+
+        // -------------------------------------------------------------
+        // Draw Car Body (High Contrast Sharp Monochrome)
+        // -------------------------------------------------------------
         if (isLeader) {
             ctx.globalAlpha = 1.0;
             // Leader Body: Crisp White
@@ -419,59 +485,95 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePlayButtonUI();
     });
 
-    // 2. Warp Speed Button (wrap karne ka speed ke liye)
-    const btnWarpSpeed = document.getElementById('btnWarpSpeed');
-    const warpText = document.getElementById('warpText');
+    // 2. Unified Speed & Population Settings Modal
+    const btnSpeedConfig = document.getElementById('btnSpeedConfig');
+    const speedConfigModal = document.getElementById('speedConfigModal');
+    const simSpeedGrid = document.getElementById('simSpeedGrid');
+    const popSizeGrid = document.getElementById('popSizeGrid');
+    const btnApplySpeedSettings = document.getElementById('btnApplySpeedSettings');
+    const btnReplayFromSettings = document.getElementById('btnReplayFromSettings');
+    const speedConfigLabel = document.getElementById('speedConfigLabel');
 
-    btnWarpSpeed.addEventListener('click', () => {
-        isWarp = !isWarp;
-        if (isWarp) {
-            btnWarpSpeed.classList.add('active');
-            warpText.innerText = "WARP: 40X";
-            sendCommand({ action: 'set_speed', speed: 40 });
-            showToast("Warp Speed Activated in Python (40X)");
-            if (isRunning) setText('simStatusText', 'WARP SPEED (40X) ACTIVE IN PYTHON');
-        } else {
-            btnWarpSpeed.classList.remove('active');
-            warpText.innerText = "WARP: OFF";
-            sendCommand({ action: 'set_speed', speed: 1 });
-            showToast("Normal Speed Restored in Python (1X)");
-            if (isRunning) setText('simStatusText', 'PYTHON AI ENGINE EXECUTING');
-        }
-    });
+    let currentSpeed = 1.0;
+    let currentPopSize = 40;
 
-    // 3. Amount of Cars Selector (amount of car selector)
-    const carAmountSelect = document.getElementById('carAmountSelect');
-    carAmountSelect.addEventListener('change', (e) => {
-        const amount = parseInt(e.target.value);
-        sendCommand({ action: 'set_population', size: amount });
-        showToast(`Python engine population adjusted to ${amount} cars.`);
-    });
-
-    // 4. Reset Simulation
-    document.getElementById('btnReset').addEventListener('click', () => {
-        if (confirm("Reset current simulation data and restart Python AI at Generation 1?")) {
-            sendCommand({ action: 'reset' });
-            showToast("Python AI reset to Generation 1.");
-        }
-    });
-
-    // 5. Audio Toggle
-    const btnAudio = document.getElementById('btnAudio');
-    function updateAudioIcon() {
-        if (sound.isMuted()) {
-            btnAudio.classList.add('muted');
-            btnAudio.title = "Unmute Audio";
-        } else {
-            btnAudio.classList.remove('muted');
-            btnAudio.title = "Mute Audio";
-        }
+    if (btnSpeedConfig && speedConfigModal) {
+        btnSpeedConfig.addEventListener('click', () => {
+            speedConfigModal.classList.add('open');
+        });
     }
-    updateAudioIcon();
-    btnAudio.addEventListener('click', () => {
-        sound.toggleMute();
+
+    if (simSpeedGrid) {
+        const speedPills = simSpeedGrid.querySelectorAll('.speed-pill');
+        speedPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                speedPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                currentSpeed = parseFloat(pill.dataset.speed) || 1.0;
+            });
+        });
+    }
+
+    if (popSizeGrid) {
+        const popPills = popSizeGrid.querySelectorAll('.pop-pill');
+        popPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                popPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                currentPopSize = parseInt(pill.dataset.size) || 40;
+            });
+        });
+    }
+
+    if (btnApplySpeedSettings) {
+        btnApplySpeedSettings.addEventListener('click', () => {
+            if (speedConfigModal) speedConfigModal.classList.remove('open');
+            sendCommand({ action: 'set_speed', speed: currentSpeed });
+            sendCommand({ action: 'set_population', size: currentPopSize });
+            if (speedConfigLabel) speedConfigLabel.innerText = `SPEED: ${currentSpeed}X`;
+            showToast(`Applied Settings: ${currentSpeed}X Speed | ${currentPopSize} Cars`);
+        });
+    }
+
+    if (btnReplayFromSettings) {
+        btnReplayFromSettings.addEventListener('click', () => {
+            if (speedConfigModal) speedConfigModal.classList.remove('open');
+            sendCommand({ action: 'replay', speed: currentSpeed });
+            sendCommand({ action: 'set_population', size: currentPopSize });
+            if (speedConfigLabel) speedConfigLabel.innerText = `SPEED: ${currentSpeed}X`;
+            showToast(`Replaying simulation at ${currentSpeed}X speed (${currentPopSize} cars)...`);
+        });
+    }
+
+    // 3. Reset Simulation
+    const btnReset = document.getElementById('btnReset');
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            if (confirm("Reset current simulation data and restart Python AI at Generation 1?")) {
+                sendCommand({ action: 'reset' });
+                showToast("Python AI reset to Generation 1.");
+            }
+        });
+    }
+
+    // 5. Audio Toggle (optional if present)
+    const btnAudio = document.getElementById('btnAudio');
+    if (btnAudio) {
+        function updateAudioIcon() {
+            if (sound.isMuted()) {
+                btnAudio.classList.add('muted');
+                btnAudio.title = "Unmute Audio";
+            } else {
+                btnAudio.classList.remove('muted');
+                btnAudio.title = "Mute Audio";
+            }
+        }
         updateAudioIcon();
-    });
+        btnAudio.addEventListener('click', () => {
+            sound.toggleMute();
+            updateAudioIcon();
+        });
+    }
 
     // -------------------------------------------------------------
     // Canvas Navigation (STRICTLY LOCKED FROM EDITING)
@@ -547,6 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapThumbnailsGrid = document.getElementById('mapThumbnailsGrid');
 
     const PRESETS = [
+        { id: 'city', title: 'Metro City Grid', description: 'Full urban grid with multi-lane avenues, 4 intersections, traffic signals, and destination hub.', presetId: 'city' },
         { id: 'boulevard', title: 'Downtown Boulevard', description: 'Straight highway with dual sidewalk streetlights and traffic chicanes.', presetId: 'boulevard' },
         { id: 'chicane', title: 'Neon Highway Chicane', description: 'Winding S-curve mountain track with curved barriers.', presetId: 'chicane' },
         { id: 'maze', title: 'Cyber Alley Maze', description: 'Tight 90-degree urban corridor with obstacle dividers.', presetId: 'maze' },

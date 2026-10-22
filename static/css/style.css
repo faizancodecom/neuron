@@ -302,32 +302,13 @@ body {
     cursor: crosshair;
 }
 
-/* Bottom Status Bar */
-.viewport-bottom-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 26px;
-    background: rgba(0, 0, 0, 0.88);
-    border-top: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 12px;
-    font-size: 10px;
-    color: var(--text-secondary);
-    z-index: 10;
-    user-select: none;
-}
-
 /* ==========================================================================
    Floating Compact Neuron Preview Card (Sirf ek map ho neurons ka)
    ========================================================================== */
 .floating-neuron-card {
     position: absolute;
     right: 16px;
-    bottom: 38px;
+    bottom: 16px;
     width: 290px;
     background: var(--bg-black);
     border: 1px solid var(--border-medium);
@@ -487,6 +468,79 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
+}
+
+/* ==========================================================================
+   Modal Close Button & Replay Modal Styling (Sharp Non-AI Slop)
+   ========================================================================== */
+.btn-close-x {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+    font-size: 20px;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.1s ease, border-color 0.1s ease, color 0.1s ease;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.btn-close-x:hover {
+    background: var(--bg-surface-elevated);
+    border-color: var(--border-white);
+    color: var(--text-primary);
+}
+
+.btn-close-x:active {
+    background: var(--text-primary);
+    color: var(--bg-black);
+    border-color: var(--text-primary);
+}
+
+.btn-sharp {
+    border-radius: 0 !important;
+}
+
+.replay-speed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.replay-speed-pill, .speed-pill, .pop-pill {
+    padding: 10px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    justify-content: center;
+    border: 1px solid var(--border-medium);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    transition: all 0.12s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.replay-speed-pill:hover, .speed-pill:hover, .pop-pill:hover {
+    border-color: var(--border-white);
+    color: var(--text-primary);
+    background: var(--bg-surface-elevated);
+}
+
+.replay-speed-pill.active, .speed-pill.active, .pop-pill.active {
+    background: var(--text-primary);
+    color: var(--bg-black);
+    border-color: var(--text-primary);
+    font-weight: 800;
 }
 
 /* ==========================================================================
